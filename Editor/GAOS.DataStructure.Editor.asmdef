@@ -1,0 +1,20 @@
+{
+    "name": "GAOS.DataStructure.Editor",
+    "rootNamespace": "GAOS.DataStructure.Editor",
+    "references": [
+        "GAOS.DataStructure",
+        "Unity.Burst",
+        "GAOS.ServiceLocator"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+} 

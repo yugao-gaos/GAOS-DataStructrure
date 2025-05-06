@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Start Guide - GAOS DataStructure</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Quick Start Guide</h1>
+        <p>Get started with GAOS DataStructure in minutes</p>
+    </header>
+
+    <div class="nav-links">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="concepts.html">Core Concepts</a></li>
+            <li><a href="api.html">API Reference</a></li>
+        </ul>
+    </div>
+
+    <section id="installation">
+        <h2>Installation</h2>
+        <div class="concept-box">
+            <h3>Option 1: Unity Package Manager (Recommended)</h3>
+            <p>The easiest way to install GAOS DataStructure is through Unity's Package Manager with Git URL:</p>
+            <pre><code>https://github.com/yourusername/com.gaos.datastructure.git</code></pre>
+            <ol>
+                <li>Open Unity and your project</li>
+                <li>Go to <code>Window > Package Manager</code></li>
+                <li>Click the <code>+</code> button in the top-left corner</li>
+                <li>Select <code>Add package from git URL...</code></li>
+                <li>Enter the URL above</li>
+                <li>Click <code>Add</code></li>
+            </ol>
+        </div>
+
+        <div class="info-box">
+            <h4>Dependencies</h4>
+            <p>GAOS DataStructure has a dependency on GAOS ServiceLocator. Make sure it's installed in your project before using DataStructure.</p>
+        </div>
+    </section>
+
+    <section id="using-editor">
+        <h2>Using the Data Structure Editor</h2>
+        
+        <div class="concept-box">
+            <h3>Creating a Data Structure</h3>
+            <p>Start by creating a new Data Structure asset in your project:</p>
+            <ol>
+                <li>Right-click in your Project window</li>
+                <li>Select <code>Create > GAOS > Data Structure</code></li>
+                <li>Name your new Data Structure (e.g., "PlayerData")</li>
+            </ol>
+            <p>This creates a ScriptableObject asset that will serve as your data template.</p>
+        </div>
+
+        <div class="concept-box">
+            <h3>Designing Your Data</h3>
+            <p>Use the Data Structure Editor to design your data hierarchy:</p>
+            <ol>
+                <li>Select your Data Structure asset in the Project window</li>
+                <li>In the Inspector, click <code>Open Data Structure Editor</code></li>
+                <li>Add fields using the <code>+</code> button</li>
+                <li>For each field, specify:
+                    <ul>
+                        <li>Name (e.g., "playerName", "level", "health")</li>
+                        <li>Type (string, int, float, etc.)</li>
+                        <li>Default value (optional)</li>
+                    </ul>
+                </li>
+                <li>Add nested containers for organizing related data</li>
+                <li>Save your changes</li>
+            </ol>
+        </div>
+    </section>
+
+    <section id="creating-instances">
+        <h2>Creating Instances</h2>
+        
+        <div class="concept-box">
+            <h3>Create a Runtime Instance</h3>
+            <p>To use your Data Structure at runtime, create an instance from your template:</p>
+            <pre><code>// Load your Data Structure asset
+var playerDataStructure = Resources.Load&lt;DataStructure&gt;("PlayerData");
+
+// Create a runtime instance
+var playerInstance = playerDataStructure.CreateInstance("PlayerOne");</code></pre>
+            <p>This creates a temporary instance that exists only in memory during runtime.</p>
+        </div>
+
+        <div class="concept-box">
+            <h3>Create a Persistent Asset</h3>
+            <p>You can also create DataInstance assets directly from the Data Structure inspector:</p>
+            <ol>
+                <li>Select your Data Structure asset in the Project window</li>
+                <li>In the Inspector, click <code>Create Instance</code></li>
+                <li>Name your instance and save it</li>
+                <li>The new DataInstance will be created as a ScriptableObject asset</li>
+            </ol>
+            <p>These DataInstance assets are persistent and can be referenced and used throughout your project.</p>
+            <p>In code, you can create persistent assets using (Editor only):</p>
+            <pre><code>#if UNITY_EDITOR
+// Create a persistent asset (Editor only)
+var persistentInstance = playerDataStructure.CreatePersistentInstance(
+    "Assets/Data/Instances", 
+    "PlayerCharacter"
+);
+#endif</code></pre>
+        </div>
+
+        <div class="concept-box">
+            <h3>Instance vs. Structure</h3>
+            <p>Key points to understand about the relationship between DataInstance and DataStructure:</p>
+            <ul>
+                <li>A DataInstance is linked to its parent DataStructure</li>
+                <li>It only stores the values that differ from the template (overrides)</li>
+                <li>Changes to the parent structure will automatically propagate to instances</li>
+                <li>Instances can be reset to match their parent template</li>
+            </ul>
+            <p>This template-instance pattern is memory efficient and perfect for creating variations of data.</p>
+        </div>
+    </section>
+
+    <section id="accessing-data">
+        <h2>Accessing Data</h2>
+        
+        <div class="concept-box">
+            <h3>Reading Values</h3>
+            <p>Access data from your instance using the Get methods:</p>
+            <pre><code>// Get data from a runtime instance
+string playerName = playerInstance.Container.Get&lt;string&gt;("playerName");
+int level = playerInstance.Container.Get&lt;int&gt;("level");
+float health = playerInstance.Container.Get&lt;float&gt;("health");
+
+// From a DataInstance component
+string playerName = instanceComponent.Container.Get&lt;string&gt;("playerName");</code></pre>
+        </div>
+
+        <div class="concept-box">
+            <h3>Using Path Access</h3>
+            <p>Access nested data using dot notation:</p>
+            <pre><code>// Access nested values using path notation
+int strength = playerInstance.Container.PathGet&lt;int&gt;("stats.strength");
+int agility = instanceComponent.Container.PathGet&lt;int&gt;("stats.agility");</code></pre>
+        </div>
+
+        <div class="concept-box">
+            <h3>Modifying Values</h3>
+            <p>Update data in your instance (without affecting the template):</p>
+            <pre><code>// Set values in your instance
+playerInstance.Container.Set("playerName", "Hero");
+playerInstance.Container.Set("level", 5);
+
+// Set nested values 
+playerInstance.Container.PathSet("stats.strength", 15);</code></pre>
+        </div>
+    </section>
+
+    <section id="next-steps">
+        <h2>Next Steps</h2>
+        <div class="doc-grid">
+            <div class="doc-card">
+                <h3>Core Concepts</h3>
+                <p>Learn more about the fundamental concepts behind DataStructure and how to effectively use it in your Unity applications.</p>
+                <a href="concepts.html" class="doc-button">Core Concepts →</a>
+            </div>
+            <div class="doc-card">
+                <h3>Advanced Topics</h3>
+                <p>Explore advanced features like path-based access, Unity object references, and more.</p>
+                <a href="advanced.html" class="doc-button">Advanced Topics →</a>
+            </div>
+            <div class="doc-card">
+                <h3>API Reference</h3>
+                <p>Browse the complete API documentation for DataStructure.</p>
+                <a href="api.html" class="doc-button">API Reference →</a>
+            </div>
+        </div>
+    </section>
+
+    <a href="index.html" class="back-link">← Back to Home</a>
+
+    <footer>
+        <p>GAOS DataStructure | <a href="index.html">Home</a> | <a href="https://www.linkedin.com/in/yugao-luckyvr">Yu Gao</a></p>
+    </footer>
+</body>
+</html> 

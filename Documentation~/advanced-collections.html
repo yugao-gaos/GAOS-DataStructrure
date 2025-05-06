@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Collections - GAOS DataStructure</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles-advanced.css">
+</head>
+<body>
+    <header>
+        <h1>Advanced Collections</h1>
+        <p>Master lists and dictionaries in the DataStructure system</p>
+    </header>
+
+    <div class="nav-links">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="advanced.html">Advanced Topics</a></li>
+            <li><a href="advanced-path-access.html">Path-Based Access</a></li>
+        </ul>
+    </div>
+
+    <section id="introduction">
+        <h2>Working with Collections</h2>
+        <p>Collections are a fundamental part of data management in any application. The DataStructure system provides robust support for two main types of collections: lists and dictionaries. This guide explores advanced techniques for working with these collections effectively.</p>
+        
+        <div class="info-box">
+            <h4>Key Advantages of DataStructure Collections</h4>
+            <ul>
+                <li>Unified access through path notation</li>
+                <li>Automatic creation during path-based access</li>
+                <li>Nested DataContainers within collections</li>
+                <li>Serialization support for persistence</li>
+                <li>Type safety through generic methods</li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="list-operations">
+        <h2>Advanced List Operations</h2>
+        
+        <div class="concept-box">
+            <h3>Creating and Managing Lists</h3>
+            <p>Lists in DataStructure hold an ordered collection of DataContainers. Here's how to create and work with them:</p>
+            <pre><code>// Create a list of items
+var inventory = container.GetOrCreateList("inventory");
+
+// Create individual items
+var sword = new DataContainer();
+sword.Set("name", "Steel Sword");
+sword.Set("damage", 15);
+sword.Set("durability", 100);
+
+var potion = new DataContainer();
+potion.Set("name", "Health Potion");
+potion.Set("healing", 25);
+potion.Set("quantity", 3);
+
+// Add items to the list
+inventory.Add(sword);
+inventory.Add(potion);</code></pre>
+        </div>
+
+        <div class="concept-box">
+            <h3>List Manipulation</h3>
+            <p>Common operations for managing list items:</p>
+            <pre><code>// Get list length
+int itemCount = inventory.Count;
+
+// Get an item by index
+var firstItem = inventory[0];
+string itemName = firstItem.Get&lt;string&gt;("name");
+
+// Insert an item at a specific position
+var shield = new DataContainer();
+shield.Set("name", "Wooden Shield");
+shield.Set("defense", 5);
+inventory.Insert(1, shield); // Insert between sword and potion
+
+// Remove an item by index
+inventory.RemoveAt(0); // Remove first item
+
+// Remove an item by reference
+inventory.Remove(potion);
+
+// Clear the entire list
+inventory.Clear();</code></pre>
+        </div>
+
+        <div class="concept-box">
+            <h3>List Iteration</h3>
+            <p>Efficiently iterate through list items:</p>
+            <pre><code>// Basic foreach iteration
+foreach (var item in inventory) {
+    string name = item.Get&lt;string&gt;("name");
+    Debug.Log($"Found item: {name}");
+}
+
+// For loop with index
+for (int i = 0; i < inventory.Count; i++) {
+    var item = inventory[i];
+    Debug.Log($"Item {i}: {item.Get&lt;string&gt;("name")}");
+}
+
+// Using LINQ for powerful queries
+using System.Linq;
+
+// Find all items with damage property
+var weapons = inventory
+    .Where(item => item.Contains("damage"))
+    .ToList();
+
+// Get all item names
+var itemNames = inventory
+    .Select(item => item.Get&lt;string&gt;("name"))
+    .ToList();
+
+// Find specific item
+var healthPotion = inventory
+    .FirstOrDefault(item => item.Get&lt;string&gt;("name") == "Health Potion");</code></pre>
+        </div>
+    </section>
+
+    <section id="dictionary-operations">
+        <h2>Advanced Dictionary Operations</h2>
+        
+        <div class="concept-box">
+            <h3>Creating and Managing Dictionaries</h3>
+            <p>Dictionaries in DataStructure hold key-value pairs where the key is a string and the value is a DataContainer:</p>
+            <pre><code>// Create a dictionary of equipment
+var equipment = container.GetOrCreateDictionary("equipment");
+
+// Add items with string keys
+var helmet = new DataContainer();
+helmet.Set("defense", 5);
+helmet.Set("durability", 80);
+equipment["head"] = helmet;
+
+var chestplate = new DataContainer();
+chestplate.Set("defense", 10);
+chestplate.Set("durability", 100);
+equipment["chest"] = chestplate;
+
+var boots = new DataContainer();
+boots.Set("defense", 3);
+boots.Set("durability", 60);
+equipment["feet"] = boots;</code></pre>
+        </div>
+
+        <div class="concept-box">
+            <h3>Dictionary Manipulation</h3>
+            <p>Common operations for managing dictionary entries:</p>
+            <pre><code>// Get dictionary size
+int equipmentCount = equipment.Count;
+
+// Check if a key exists
+bool hasHelmet = equipment.ContainsKey("head");
+
+// Get an item by key (with null check)
+if (equipment.TryGetValue("chest", out var chest)) {
+    int defense = chest.Get&lt;int&gt;("defense");
+    Debug.Log($"Chest armor: {defense} defense");
+}
+
+// Alternative approach with default
+var boots = equipment.GetValueOrDefault("feet", null);
+if (boots != null) {
+    int defense = boots.Get&lt;int&gt;("defense");
+}
+
+// Remove an item by key
+equipment.Remove("head");
+
+// Clear the entire dictionary
+equipment.Clear();</code></pre>
+        </div>
+
+        <div class="concept-box">
+            <h3>Dictionary Iteration</h3>
+            <p>Efficiently iterate through dictionary entries:</p>
+            <pre><code>// Iterate through key-value pairs
+foreach (var pair in equipment) {
+    string slot = pair.Key;
+    var item = pair.Value;
+    int defense = item.Get&lt;int&gt;("defense");
+    Debug.Log($"{slot}: {defense} defense");
+}
+
+// Iterate through keys only
+foreach (string slot in equipment.Keys) {
+    Debug.Log($"Equipped in {slot} slot");
+}
+
+// Iterate through values only
+foreach (var item in equipment.Values) {
+    int durability = item.Get&lt;int&gt;("durability");
+    Debug.Log($"Item durability: {durability}");
+}
+
+// Using LINQ for queries
+using System.Linq;
+
+// Find all equipment with high defense
+var strongEquipment = equipment
+    .Where(pair => pair.Value.Get&lt;int&gt;("defense") > 5)
+    .ToDictionary(pair => pair.Key, pair => pair.Value);
+
+// Calculate total defense
+int totalDefense = equipment.Values
+    .Sum(item => item.Get&lt;int&gt;("defense"));
+
+// Find slot with highest defense
+var bestDefenseSlot = equipment
+    .OrderByDescending(pair => pair.Value.Get&lt;int&gt;("defense"))
+    .First().Key;</code></pre>
+        </div>
+    </section>
+
+    <section id="nested-collections">
+        <h2>Nested Collections</h2>
+        
+        <div class="concept-box">
+            <h3>Lists within Containers</h3>
+            <p>Create hierarchical data with lists inside DataContainers:</p>
+            <pre><code>// Character with lists for inventory and abilities
+var character = new DataContainer();
+character.Set("name", "Hero");
+
+// Create inventory list
+var inventory = character.GetOrCreateList("inventory");
+
+// Add items to inventory
+var sword = new DataContainer();
+sword.Set("name", "Excalibur");
+inventory.Add(sword);
+
+var potion = new DataContainer();
+potion.Set("name", "Healing Potion");
+inventory.Add(potion);
+
+// Create abilities list
+var abilities = character.GetOrCreateList("abilities");
+
+// Add abilities
+var fireball = new DataContainer();
+fireball.Set("name", "Fireball");
+fireball.Set("damage", 25);
+abilities.Add(fireball);
+
+var heal = new DataContainer();
+heal.Set("name", "Heal");
+heal.Set("healing", 20);
+abilities.Add(heal);</code></pre>
+        </div>
+
+        <div class="concept-box">
+            <h3>Dictionaries within Containers</h3>
+            <p>Create complex data with dictionaries inside DataContainers:</p>
+            <pre><code>// Game world with regions
+var gameWorld = new DataContainer();
+gameWorld.Set("name", "Eldoria");
+
+// Create regions dictionary
+var regions = gameWorld.GetOrCreateDictionary("regions");
+
+// Add regions
+var forest = new DataContainer();
+forest.Set("name", "Whispering Forest");
+forest.Set("difficulty", 1);
+forest.Set("unlocked", true);
+regions["forest"] = forest;
+
+var mountains = new DataContainer();
+mountains.Set("name", "Frostpeak Mountains");
+mountains.Set("difficulty", 3);
+mountains.Set("unlocked", false);
+regions["mountains"] = mountains;
+
+// Access nested data
+string regionName = gameWorld.PathGet&lt;string&gt;("regions[\"forest\"].name");
+bool isUnlocked = gameWorld.PathGet&lt;bool&gt;("regions[\"mountains\"].unlocked");</code></pre>
+        </div>
+
+        <div class="concept-box">
+            <h3>Collections within Collections</h3>
+            <p>Create deeply nested data structures with collections inside other collections:</p>
+            <pre><code>// RPG party system with characters and their inventories
+var party = new DataContainer();
+
+// Create party members list
+var members = party.GetOrCreateList("members");
+
+// Add first character with inventory
+var warrior = new DataContainer();
+warrior.Set("name", "Aragorn");
+warrior.Set("class", "Warrior");
+
+// Create warrior's inventory
+var warriorInventory = warrior.GetOrCreateList("inventory");
+var sword = new DataContainer();
+sword.Set("name", "Andúril");
+warriorInventory.Add(sword);
+members.Add(warrior);
+
+// Add second character with inventory
+var wizard = new DataContainer();
+wizard.Set("name", "Gandalf");
+wizard.Set("class", "Wizard");
+
+// Create wizard's inventory and spellbook
+var wizardInventory = wizard.GetOrCreateList("inventory");
+var staff = new DataContainer();
+staff.Set("name", "White Staff");
+wizardInventory.Add(staff);
+
+var wizardSpells = wizard.GetOrCreateDictionary("spells");
+var lightSpell = new DataContainer();
+lightSpell.Set("power", 5);
+wizardSpells["light"] = lightSpell;
+members.Add(wizard);
+
+// Deep access using path notation
+string firstCharacterName = party.PathGet&lt;string&gt;("members[0].name");
+string wizardStaff = party.PathGet&lt;string&gt;("members[1].inventory[0].name");
+int lightSpellPower = party.PathGet&lt;int&gt;("members[1].spells[\"light\"].power");</code></pre>
+        </div>
+    </section>
+
+    <section id="collection-best-practices">
+        <h2>Best Practices for Collections</h2>
+        
+        <div class="concept-box">
+            <h3>Performance Considerations</h3>
+            <p>Tips for efficient collection management:</p>
+            <ul>
+                <li><strong>Preallocate capacity</strong> when creating large collections to reduce reallocations</li>
+                <li><strong>Cache collection references</strong> when performing multiple operations on the same collection</li>
+                <li><strong>Use direct indexing</strong> instead of path access for performance-critical loops</li>
+                <li><strong>Batch modifications</strong> to collections when possible</li>
+                <li><strong>Consider access patterns</strong> when choosing between lists and dictionaries</li>
+            </ul>
+            <pre><code>// Cache collection reference for better performance
+var inventory = character.GetOrCreateList("inventory");
+
+// Process all items directly
+for (int i = 0; i < inventory.Count; i++) {
+    // Working directly with the collection is more efficient
+    // than using character.PathGet("inventory[0]") in a loop
+    var item = inventory[i];
+    ProcessItem(item);
+}</code></pre>
+        </div>
+
+        <div class="concept-box">
+            <h3>Collection Validation</h3>
+            <p>Strategies for validating collection contents:</p>
+            <pre><code>// Validate required fields in inventory items
+var inventory = character.Get&lt;List&lt;DataContainer&gt;&gt;("inventory");
+if (inventory != null) {
+    foreach (var item in inventory) {
+        // Check for required fields
+        if (!item.Contains("name")) {
+            Debug.LogWarning("Inventory item missing name field");
+            item.Set("name", "Unknown Item");
+        }
+        
+        // Validate numeric values
+        if (item.Contains("quantity")) {
+            int quantity = item.Get&lt;int&gt;("quantity");
+            if (quantity <= 0) {
+                item.Set("quantity", 1);
+                Debug.LogWarning("Fixed invalid item quantity");
+            }
+        }
+    }
+}</code></pre>
+        </div>
+
+        <div class="concept-box">
+            <h3>Standardizing Collection Structure</h3>
+            <p>Create helper methods to ensure consistent collection structures:</p>
+            <pre><code>// Helper to create an item with standard fields
+private DataContainer CreateStandardItem(string name, string type, int value) {
+    var item = new DataContainer();
+    item.Set("name", name);
+    item.Set("type", type);
+    item.Set("value", value);
+    item.Set("createTime", DateTime.Now.ToString());
+    return item;
+}
+
+// Helper to create a character with standard containers
+private DataContainer CreateCharacter(string name, int level) {
+    var character = new DataContainer();
+    character.Set("name", name);
+    character.Set("level", level);
+    
+    // Ensure standard collections exist
+    character.GetOrCreateList("inventory");
+    character.GetOrCreateList("abilities");
+    character.GetOrCreateDictionary("equipment");
+    character.GetOrCreateContainer("stats");
+    
+    return character;
+}</code></pre>
+        </div>
+    </section>
+
+    <section id="next-steps">
+        <h2>Next Steps</h2>
+        <div class="doc-grid">
+            <div class="doc-card">
+                <h3>Unity Object References</h3>
+                <p>Learn how to store and work with Unity object references in your data structures.</p>
+                <a href="advanced-unity-references.html" class="doc-button">Unity References →</a>
+            </div>
+            <div class="doc-card">
+                <h3>Serialization</h3>
+                <p>Explore techniques for serializing collection data for persistence and networking.</p>
+                <a href="advanced-serialization.html" class="doc-button">Serialization →</a>
+            </div>
+            <div class="doc-card">
+                <h3>Observer Pattern</h3>
+                <p>Implement reactive programming with the observer pattern for collection changes.</p>
+                <a href="advanced-observer.html" class="doc-button">Observer Pattern →</a>
+            </div>
+        </div>
+    </section>
+
+    <a href="advanced.html" class="back-link">← Back to Advanced Topics</a>
+
+    <footer>
+        <p>GAOS DataStructure | <a href="index.html">Home</a> | <a href="https://www.linkedin.com/in/yugao-luckyvr">Yu Gao</a></p>
+    </footer>
+</body>
+</html> 

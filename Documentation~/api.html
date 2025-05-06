@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Reference - GAOS DataStructure</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>API Reference</h1>
+        <p>Complete documentation of the GAOS DataStructure API</p>
+    </header>
+
+    <div class="nav-links">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="quick-start.html">Quick Start</a></li>
+            <li><a href="concepts.html">Core Concepts</a></li>
+        </ul>
+    </div>
+
+    <section id="classes">
+        <h2>Core Classes</h2>
+        <p>The DataStructure package consists of several key classes that work together to provide a complete data management solution.</p>
+        
+        <div class="doc-grid">
+            <div class="doc-card">
+                <h3>DataContainer</h3>
+                <p>The fundamental key-value store for all types of data.</p>
+                <a href="#data-container" class="doc-button">View API →</a>
+            </div>
+            <div class="doc-card">
+                <h3>DataStructure</h3>
+                <p>ScriptableObject that serves as a template for data structures.</p>
+                <a href="#data-structure" class="doc-button">View API →</a>
+            </div>
+            <div class="doc-card">
+                <h3>DataInstance</h3>
+                <p>ScriptableObject that creates instances from DataStructure templates.</p>
+                <a href="#data-instance" class="doc-button">View API →</a>
+            </div>
+        </div>
+    </section>
+
+    <section id="data-container" class="api-section">
+        <h2>DataContainer</h2>
+        <p>The DataContainer class is the core component of the DataStructure system, providing a flexible key-value store with support for nested data, collections, and path-based access.</p>
+
+        <div class="method">
+            <h3>Constructor</h3>
+            <div class="method-signature">public DataContainer()</div>
+            <p>Creates a new, empty DataContainer.</p>
+        </div>
+
+        <h3>Basic Methods</h3>
+
+        <div class="method">
+            <h3>Set&lt;T&gt;</h3>
+            <div class="method-signature">public void Set&lt;T&gt;(string key, T value)</div>
+            <p>Sets a value in the container with the specified key.</p>
+            <div class="parameter-list">
+                <h4>Parameters:</h4>
+                <div class="parameter">
+                    <span class="parameter-name">key</span>: <span class="parameter-type">string</span> - The key to identify the value.
+                </div>
+                <div class="parameter">
+                    <span class="parameter-name">value</span>: <span class="parameter-type">T</span> - The value to store.
+                </div>
+            </div>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>var container = new DataContainer();
+container.Set("name", "Player");
+container.Set("level", 5);
+container.Set("position", new Vector3(1, 0, 1));</code></pre>
+            </div>
+        </div>
+
+        <div class="method">
+            <h3>Get&lt;T&gt;</h3>
+            <div class="method-signature">public T Get&lt;T&gt;(string key)</div>
+            <div class="method-signature">public T Get&lt;T&gt;(string key, T defaultValue)</div>
+            <p>Gets a value from the container with the specified key. Returns the default value for type T if the key doesn't exist or the value can't be converted to type T.</p>
+            <div class="parameter-list">
+                <h4>Parameters:</h4>
+                <div class="parameter">
+                    <span class="parameter-name">key</span>: <span class="parameter-type">string</span> - The key to retrieve the value for.
+                </div>
+                <div class="parameter">
+                    <span class="parameter-name">defaultValue</span>: <span class="parameter-type">T</span> - (Optional) The value to return if the key doesn't exist.
+                </div>
+            </div>
+            <div class="returns">
+                <h4>Returns:</h4>
+                <span class="parameter-type">T</span> - The value associated with the key, or the default value.
+            </div>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>string name = container.Get&lt;string&gt;("name");
+int level = container.Get&lt;int&gt;("level");
+Vector3 position = container.Get&lt;Vector3&gt;("position");
+
+// With default value
+int health = container.Get&lt;int&gt;("health", 100);</code></pre>
+            </div>
+        </div>
+
+        <div class="method">
+            <h3>Contains</h3>
+            <div class="method-signature">public bool Contains(string key)</div>
+            <p>Checks if the container has a value with the specified key.</p>
+            <div class="parameter-list">
+                <h4>Parameters:</h4>
+                <div class="parameter">
+                    <span class="parameter-name">key</span>: <span class="parameter-type">string</span> - The key to check.
+                </div>
+            </div>
+            <div class="returns">
+                <h4>Returns:</h4>
+                <span class="parameter-type">bool</span> - True if the container has a value with the specified key, false otherwise.
+            </div>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>if (container.Contains("health")) {
+    float health = container.Get&lt;float&gt;("health");
+    Debug.Log($"Player health: {health}");
+}</code></pre>
+            </div>
+        </div>
+
+        <div class="method">
+            <h3>Remove</h3>
+            <div class="method-signature">public void Remove(string key)</div>
+            <p>Removes a value from the container with the specified key.</p>
+            <div class="parameter-list">
+                <h4>Parameters:</h4>
+                <div class="parameter">
+                    <span class="parameter-name">key</span>: <span class="parameter-type">string</span> - The key to remove.
+                </div>
+            </div>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>container.Remove("temporary_data");</code></pre>
+            </div>
+        </div>
+
+        <h3>Container Methods</h3>
+        
+        <div class="method">
+            <h3>GetOrCreateContainer</h3>
+            <div class="method-signature">public DataContainer GetOrCreateContainer(string key)</div>
+            <p>Gets a nested DataContainer with the specified key, or creates a new one if it doesn't exist.</p>
+            <div class="parameter-list">
+                <h4>Parameters:</h4>
+                <div class="parameter">
+                    <span class="parameter-name">key</span>: <span class="parameter-type">string</span> - The key for the nested container.
+                </div>
+            </div>
+            <div class="returns">
+                <h4>Returns:</h4>
+                <span class="parameter-type">DataContainer</span> - The nested container.
+            </div>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>var stats = container.GetOrCreateContainer("stats");
+stats.Set("strength", 10);
+stats.Set("agility", 15);</code></pre>
+            </div>
+        </div>
+
+        <h3>Collection Methods</h3>
+        
+        <div class="method">
+            <h3>GetOrCreateList</h3>
+            <div class="method-signature">public List&lt;DataContainer&gt; GetOrCreateList(string key)</div>
+            <p>Gets a list of DataContainers with the specified key, or creates a new one if it doesn't exist.</p>
+            <div class="parameter-list">
+                <h4>Parameters:</h4>
+                <div class="parameter">
+                    <span class="parameter-name">key</span>: <span class="parameter-type">string</span> - The key for the list.
+                </div>
+            </div>
+            <div class="returns">
+                <h4>Returns:</h4>
+                <span class="parameter-type">List&lt;DataContainer&gt;</span> - The list of containers.
+            </div>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>var inventory = container.GetOrCreateList("inventory");
+
+var item1 = new DataContainer();
+item1.Set("name", "Health Potion");
+inventory.Add(item1);
+
+var item2 = new DataContainer();
+item2.Set("name", "Sword");
+inventory.Add(item2);</code></pre>
+            </div>
+        </div>
+
+        <div class="method">
+            <h3>GetOrCreateDictionary</h3>
+            <div class="method-signature">public OrderedDictionary&lt;string, DataContainer&gt; GetOrCreateDictionary(string key)</div>
+            <p>Gets an ordered dictionary of DataContainers with the specified key, or creates a new one if it doesn't exist.</p>
+            <div class="parameter-list">
+                <h4>Parameters:</h4>
+                <div class="parameter">
+                    <span class="parameter-name">key</span>: <span class="parameter-type">string</span> - The key for the dictionary.
+                </div>
+            </div>
+            <div class="returns">
+                <h4>Returns:</h4>
+                <span class="parameter-type">OrderedDictionary&lt;string, DataContainer&gt;</span> - The ordered dictionary of containers.
+            </div>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>var equipment = container.GetOrCreateDictionary("equipment");
+
+var helmet = new DataContainer();
+helmet.Set("defense", 5);
+equipment["head"] = helmet;
+
+var sword = new DataContainer();
+sword.Set("damage", 10);
+equipment["weapon"] = sword;</code></pre>
+            </div>
+        </div>
+
+        <h3>Path Methods</h3>
+        
+        <div class="method">
+            <h3>PathGet&lt;T&gt;</h3>
+            <div class="method-signature">public T PathGet&lt;T&gt;(string path)</div>
+            <div class="method-signature">public T PathGet&lt;T&gt;(string path, T defaultValue)</div>
+            <p>Gets a value from the container using a path notation. The path can include dot notation for nested containers, array indices for lists, and key access for dictionaries.</p>
+            <div class="parameter-list">
+                <h4>Parameters:</h4>
+                <div class="parameter">
+                    <span class="parameter-name">path</span>: <span class="parameter-type">string</span> - The path to the value.
+                </div>
+                <div class="parameter">
+                    <span class="parameter-name">defaultValue</span>: <span class="parameter-type">T</span> - (Optional) The value to return if the path doesn't exist.
+                </div>
+            </div>
+            <div class="returns">
+                <h4>Returns:</h4>
+                <span class="parameter-type">T</span> - The value at the specified path, or the default value.
+            </div>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>int strength = container.PathGet&lt;int&gt;("stats.strength");
+string itemName = container.PathGet&lt;string&gt;("inventory[0].name");
+int damage = container.PathGet&lt;int&gt;("equipment[\"weapon\"].damage");</code></pre>
+            </div>
+        </div>
+
+        <div class="method">
+            <h3>PathSet&lt;T&gt;</h3>
+            <div class="method-signature">public void PathSet&lt;T&gt;(string path, T value)</div>
+            <p>Sets a value in the container using a path notation. The path can include dot notation for nested containers, array indices for lists, and key access for dictionaries. If any part of the path doesn't exist, it will be created.</p>
+            <div class="parameter-list">
+                <h4>Parameters:</h4>
+                <div class="parameter">
+                    <span class="parameter-name">path</span>: <span class="parameter-type">string</span> - The path to the value.
+                </div>
+                <div class="parameter">
+                    <span class="parameter-name">value</span>: <span class="parameter-type">T</span> - The value to set.
+                </div>
+            </div>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>container.PathSet("stats.strength", 15);
+container.PathSet("inventory[0].name", "Health Potion");
+container.PathSet("equipment[\"weapon\"].damage", 10);</code></pre>
+            </div>
+        </div>
+
+        <h3>Serialization Methods</h3>
+        
+        <div class="method">
+            <h3>ToJson</h3>
+            <div class="method-signature">public string ToJson()</div>
+            <p>Converts the container to a JSON string.</p>
+            <div class="returns">
+                <h4>Returns:</h4>
+                <span class="parameter-type">string</span> - The JSON representation of the container.
+            </div>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>string json = container.ToJson();
+Debug.Log("Container JSON: " + json);
+
+// Save to PlayerPrefs
+PlayerPrefs.SetString("playerData", json);</code></pre>
+            </div>
+        </div>
+
+        <div class="method">
+            <h3>FromJson</h3>
+            <div class="method-signature">public void FromJson(string json)</div>
+            <p>Populates the container from a JSON string.</p>
+            <div class="parameter-list">
+                <h4>Parameters:</h4>
+                <div class="parameter">
+                    <span class="parameter-name">json</span>: <span class="parameter-type">string</span> - The JSON string to parse.
+                </div>
+            </div>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>// Load from PlayerPrefs
+string json = PlayerPrefs.GetString("playerData");
+container.FromJson(json);</code></pre>
+            </div>
+        </div>
+
+        <h3>Observer Methods</h3>
+        
+        <div class="method">
+            <h3>AddObserver</h3>
+            <div class="method-signature">public void AddObserver(Action&lt;string, object, object&gt; observer)</div>
+            <p>Adds an observer that will be notified when values in the container change.</p>
+            <div class="parameter-list">
+                <h4>Parameters:</h4>
+                <div class="parameter">
+                    <span class="parameter-name">observer</span>: <span class="parameter-type">Action&lt;string, object, object&gt;</span> - The observer callback that receives the key, old value, and new value.
+                </div>
+            </div>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>container.AddObserver(OnDataChanged);
+
+private void OnDataChanged(string key, object oldValue, object newValue) {
+    Debug.Log($"Value changed: {key} from {oldValue} to {newValue}");
+}</code></pre>
+            </div>
+        </div>
+
+        <div class="method">
+            <h3>RemoveObserver</h3>
+            <div class="method-signature">public void RemoveObserver(Action&lt;string, object, object&gt; observer)</div>
+            <p>Removes an observer from the container.</p>
+            <div class="parameter-list">
+                <h4>Parameters:</h4>
+                <div class="parameter">
+                    <span class="parameter-name">observer</span>: <span class="parameter-type">Action&lt;string, object, object&gt;</span> - The observer callback to remove.
+                </div>
+            </div>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>container.RemoveObserver(OnDataChanged);</code></pre>
+            </div>
+        </div>
+
+        <h3>Unity Object Reference Methods</h3>
+        
+        <div class="method">
+            <h3>SetUnityObject&lt;T&gt;</h3>
+            <div class="method-signature">public void SetUnityObject&lt;T&gt;(string key, T obj, ReferenceStorageType storageType = ReferenceStorageType.Registry, string referenceKey = null) where T : UnityEngine.Object</div>
+            <p>Sets a Unity object reference in the container.</p>
+            <div class="parameter-list">
+                <h4>Parameters:</h4>
+                <div class="parameter">
+                    <span class="parameter-name">key</span>: <span class="parameter-type">string</span> - The key to store the reference under.
+                </div>
+                <div class="parameter">
+                    <span class="parameter-name">obj</span>: <span class="parameter-type">T</span> - The Unity object to reference.
+                </div>
+                <div class="parameter">
+                    <span class="parameter-name">storageType</span>: <span class="parameter-type">ReferenceStorageType</span> - (Optional) How the reference should be stored. Default is Registry.
+                </div>
+                <div class="parameter">
+                    <span class="parameter-name">referenceKey</span>: <span class="parameter-type">string</span> - (Optional) Custom key for the reference. Defaults to object name.
+                </div>
+            </div>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>// Store a reference to a prefab
+container.SetUnityObject("playerPrefab", playerPrefab);
+
+// Store a reference to a sprite with custom storage type
+container.SetUnityObject("icon", iconSprite, ReferenceStorageType.Direct);</code></pre>
+            </div>
+        </div>
+
+        <div class="method">
+            <h3>GetUnityObject&lt;T&gt;</h3>
+            <div class="method-signature">public T GetUnityObject&lt;T&gt;(string key, T defaultValue = null) where T : UnityEngine.Object</div>
+            <p>Gets a Unity object reference from the container.</p>
+            <div class="parameter-list">
+                <h4>Parameters:</h4>
+                <div class="parameter">
+                    <span class="parameter-name">key</span>: <span class="parameter-type">string</span> - The key the reference is stored under.
+                </div>
+                <div class="parameter">
+                    <span class="parameter-name">defaultValue</span>: <span class="parameter-type">T</span> - (Optional) Default value if reference is not found or invalid.
+                </div>
+            </div>
+            <div class="returns">
+                <h4>Returns:</h4>
+                <span class="parameter-type">T</span> - The referenced Unity object, or defaultValue if not found.
+            </div>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>// Get a prefab reference
+GameObject prefab = container.GetUnityObject&lt;GameObject&gt;("playerPrefab");
+
+// Get a sprite reference with default value
+Sprite icon = container.GetUnityObject&lt;Sprite&gt;("icon", defaultSprite);</code></pre>
+            </div>
+        </div>
+
+        <div class="method">
+            <h3>PathSetUnityObject&lt;T&gt;</h3>
+            <div class="method-signature">public void PathSetUnityObject&lt;T&gt;(string path, T obj, ReferenceStorageType storageType = ReferenceStorageType.Registry, string referenceKey = null) where T : UnityEngine.Object</div>
+            <p>Sets a Unity object reference at the specified path.</p>
+            <div class="parameter-list">
+                <h4>Parameters:</h4>
+                <div class="parameter">
+                    <span class="parameter-name">path</span>: <span class="parameter-type">string</span> - The path to set the reference at.
+                </div>
+                <div class="parameter">
+                    <span class="parameter-name">obj</span>: <span class="parameter-type">T</span> - The Unity object to reference.
+                </div>
+                <div class="parameter">
+                    <span class="parameter-name">storageType</span>: <span class="parameter-type">ReferenceStorageType</span> - (Optional) How the reference should be stored. Default is Registry.
+                </div>
+                <div class="parameter">
+                    <span class="parameter-name">referenceKey</span>: <span class="parameter-type">string</span> - (Optional) Custom key for the reference. Defaults to object name.
+                </div>
+            </div>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>// Store a reference to a prefab at a nested path
+container.PathSetUnityObject("player.equipment.weapon", swordPrefab);</code></pre>
+            </div>
+        </div>
+
+        <div class="method">
+            <h3>PathGetUnityObject&lt;T&gt;</h3>
+            <div class="method-signature">public T PathGetUnityObject&lt;T&gt;(string path, T defaultValue = null) where T : UnityEngine.Object</div>
+            <p>Gets a Unity object reference from the specified path.</p>
+            <div class="parameter-list">
+                <h4>Parameters:</h4>
+                <div class="parameter">
+                    <span class="parameter-name">path</span>: <span class="parameter-type">string</span> - The path to get the reference from.
+                </div>
+                <div class="parameter">
+                    <span class="parameter-name">defaultValue</span>: <span class="parameter-type">T</span> - (Optional) Default value if reference is not found or invalid.
+                </div>
+            </div>
+            <div class="returns">
+                <h4>Returns:</h4>
+                <span class="parameter-type">T</span> - The referenced Unity object, or defaultValue if not found.
+            </div>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>// Get a prefab reference from a nested path
+GameObject weapon = container.PathGetUnityObject&lt;GameObject&gt;("player.equipment.weapon");</code></pre>
+            </div>
+        </div>
+    </section>
+
+    <section id="data-structure" class="api-section">
+        <h2>DataStructure</h2>
+        <p>The DataStructure class is a ScriptableObject that defines a template for a data structure.</p>
+
+        <div class="method">
+            <h3>Container</h3>
+            <div class="method-signature">public DataContainer Container { get; }</div>
+            <p>Gets the root DataContainer for this structure.</p>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>var characterStructure = ScriptableObject.CreateInstance&lt;DataStructure&gt;();
+characterStructure.Container.Set("name", "Default Character");
+characterStructure.Container.Set("level", 1);</code></pre>
+            </div>
+        </div>
+
+        <div class="method">
+            <h3>CreateInstance</h3>
+            <div class="method-signature">public DataInstance CreateInstance(string instanceName)</div>
+            <p>Creates a new DataInstance based on this structure.</p>
+            <div class="parameter-list">
+                <h4>Parameters:</h4>
+                <div class="parameter">
+                    <span class="parameter-name">instanceName</span>: <span class="parameter-type">string</span> - The name for the new instance.
+                </div>
+            </div>
+            <div class="returns">
+                <h4>Returns:</h4>
+                <span class="parameter-type">DataInstance</span> - A new DataInstance that references this structure as its template.
+            </div>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>var playerCharacter = characterStructure.CreateInstance("PlayerCharacter");
+playerCharacter.Container.Set("name", "Hero");
+playerCharacter.Container.Set("level", 5);</code></pre>
+            </div>
+        </div>
+    </section>
+
+    <section id="data-instance" class="api-section">
+        <h2>DataInstance</h2>
+        <p>The DataInstance class is a ScriptableObject that creates an instance from a DataStructure template, storing only the overridden values.</p>
+
+        <div class="method">
+            <h3>ParentStructure</h3>
+            <div class="method-signature">public DataStructure ParentStructure { get; }</div>
+            <p>Gets the DataStructure template for this instance.</p>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>DataStructure template = playerCharacter.ParentStructure;</code></pre>
+            </div>
+        </div>
+
+        <div class="method">
+            <h3>Container</h3>
+            <div class="method-signature">public DataContainer Container { get; }</div>
+            <p>Gets the combined DataContainer that includes the template values with this instance's overrides.</p>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>string name = playerCharacter.Container.Get&lt;string&gt;("name");
+int level = playerCharacter.Container.Get&lt;int&gt;("level");</code></pre>
+            </div>
+        </div>
+
+        <div class="method">
+            <h3>SetValue&lt;T&gt;</h3>
+            <div class="method-signature">public void SetValue&lt;T&gt;(string path, T value)</div>
+            <p>Sets a value for the specified path, automatically tracking it as an override.</p>
+            <div class="parameter-list">
+                <h4>Parameters:</h4>
+                <div class="parameter">
+                    <span class="parameter-name">path</span>: <span class="parameter-type">string</span> - The path to set.
+                </div>
+                <div class="parameter">
+                    <span class="parameter-name">value</span>: <span class="parameter-type">T</span> - The value to set.
+                </div>
+            </div>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>// Set a value that will be tracked as an override
+playerCharacter.SetValue("name", "Hero");
+playerCharacter.SetValue("stats.strength", 15);</code></pre>
+            </div>
+        </div>
+
+        <div class="method">
+            <h3>GetValue&lt;T&gt;</h3>
+            <div class="method-signature">public T GetValue&lt;T&gt;(string path, T defaultValue = default)</div>
+            <p>Gets a value from the container for the specified path.</p>
+            <div class="parameter-list">
+                <h4>Parameters:</h4>
+                <div class="parameter">
+                    <span class="parameter-name">path</span>: <span class="parameter-type">string</span> - The path to get.
+                </div>
+                <div class="parameter">
+                    <span class="parameter-name">defaultValue</span>: <span class="parameter-type">T</span> - (Optional) The default value to return if the path does not exist.
+                </div>
+            </div>
+            <div class="returns">
+                <h4>Returns:</h4>
+                <span class="parameter-type">T</span> - The value at the specified path.
+            </div>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>string name = playerCharacter.GetValue&lt;string&gt;("name");
+int strength = playerCharacter.GetValue&lt;int&gt;("stats.strength", 10);</code></pre>
+            </div>
+        </div>
+
+        <div class="method">
+            <h3>RemoveOverride</h3>
+            <div class="method-signature">public bool RemoveOverride(string path)</div>
+            <p>Removes an override for the specified path.</p>
+            <div class="parameter-list">
+                <h4>Parameters:</h4>
+                <div class="parameter">
+                    <span class="parameter-name">path</span>: <span class="parameter-type">string</span> - The path to remove the override for.
+                </div>
+            </div>
+            <div class="returns">
+                <h4>Returns:</h4>
+                <span class="parameter-type">bool</span> - True if an override was removed, false otherwise.
+            </div>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>// Remove an override to revert to the template value
+playerCharacter.RemoveOverride("stats.strength");</code></pre>
+            </div>
+        </div>
+
+        <div class="method">
+            <h3>HasOverride</h3>
+            <div class="method-signature">public bool HasOverride(string path)</div>
+            <p>Checks if there's an override for the specified path.</p>
+            <div class="parameter-list">
+                <h4>Parameters:</h4>
+                <div class="parameter">
+                    <span class="parameter-name">path</span>: <span class="parameter-type">string</span> - The path to check.
+                </div>
+            </div>
+            <div class="returns">
+                <h4>Returns:</h4>
+                <span class="parameter-type">bool</span> - True if there's an override for the path, false otherwise.
+            </div>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>if (playerCharacter.HasOverride("name")) {
+    Debug.Log("Name has been customized");
+}</code></pre>
+            </div>
+        </div>
+
+        <div class="method">
+            <h3>Reset</h3>
+            <div class="method-signature">public void Reset()</div>
+            <p>Resets the instance by clearing all overrides.</p>
+            <div class="example">
+                <h4>Example:</h4>
+                <pre><code>// Reset all overrides back to template values
+playerCharacter.Reset();</code></pre>
+            </div>
+        </div>
+    </section>
+
+    <a href="index.html" class="back-link">← Back to Home</a>
+
+    <footer>
+        <p>GAOS DataStructure | <a href="index.html">Home</a> | <a href="https://www.linkedin.com/in/yugao-luckyvr">Yu Gao</a></p>
+    </footer>
+</body>
+</html> 

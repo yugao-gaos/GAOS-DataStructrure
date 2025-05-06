@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Path-Based Access - GAOS DataStructure</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles-advanced.css">
+</head>
+<body>
+    <header>
+        <h1>Path-Based Access</h1>
+        <p>Master the powerful path notation for navigating and manipulating nested data structures</p>
+    </header>
+
+    <div class="nav-links">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="concepts.html">Core Concepts</a></li>
+            <li><a href="advanced.html">Advanced Topics</a></li>
+        </ul>
+    </div>
+
+    <section id="introduction">
+        <h2>Introduction to Path-Based Access</h2>
+        <p>One of the most powerful features of the DataStructure system is its path-based access mechanism. This allows you to navigate and manipulate nested data structures with a simple, intuitive syntax similar to JavaScript object notation.</p>
+        
+        <div class="info-box">
+            <h4>When to Use Path-Based Access</h4>
+            <p>Path-based access is particularly useful when:</p>
+            <ul>
+                <li>Working with deeply nested data structures</li>
+                <li>Accessing elements in collections (lists and dictionaries)</li>
+                <li>Creating dynamic data access patterns where paths are constructed at runtime</li>
+                <li>Implementing data binding systems that need to track specific data paths</li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="basic-path-syntax">
+        <h2>Basic Path Syntax</h2>
+        
+        <div class="concept-box">
+            <h3>Dot Notation</h3>
+            <p>The most basic form of path notation uses dots to navigate nested containers:</p>
+            <pre><code>// Create a nested data structure
+var player = new DataContainer();
+var stats = player.GetOrCreateContainer("stats");
+stats.Set("strength", 15);
+stats.Set("agility", 12);
+
+// Access nested data with path notation
+int strength = player.PathGet&lt;int&gt;("stats.strength");
+
+// Set nested data with path notation
+player.PathSet("stats.intelligence", 10);</code></pre>
+            <p>The dot notation allows you to navigate through multiple levels of nesting in a single operation.</p>
+        </div>
+
+        <div class="concept-box">
+            <h3>Path Navigation Rules</h3>
+            <p>When navigating paths, the DataContainer follows these rules:</p>
+            <ul>
+                <li>If a segment doesn't exist, it returns the default value</li>
+                <li>If a segment exists but has the wrong type, it returns the default value</li>
+                <li>Setting values creates the necessary containers automatically</li>
+            </ul>
+            <pre><code>// This will automatically create the nested containers as needed
+player.PathSet("inventory.equipment.weapon.name", "Excalibur");
+
+// If any segment of the path doesn't exist, this returns the default
+// value (0 in this case) without throwing an exception
+int damage = player.PathGet&lt;int&gt;("inventory.equipment.weapon.damage", 0);</code></pre>
+        </div>
+    </section>
+
+    <section id="collection-access">
+        <h2>Accessing Collections</h2>
+        
+        <div class="concept-box">
+            <h3>List Index Notation</h3>
+            <p>For accessing items in a list, use square brackets with the index:</p>
+            <pre><code>// Create a list of items
+var inventory = player.GetOrCreateList("inventory");
+
+var sword = new DataContainer();
+sword.Set("name", "Steel Sword");
+inventory.Add(sword);
+
+var potion = new DataContainer();
+potion.Set("name", "Health Potion");
+inventory.Add(potion);
+
+// Access the first item in the list by index
+string firstItem = player.PathGet&lt;string&gt;("inventory[0].name"); // Returns "Steel Sword"
+string secondItem = player.PathGet&lt;string&gt;("inventory[1].name"); // Returns "Health Potion"</code></pre>
+            <p>Index access is zero-based, just like C# arrays.</p>
+        </div>
+
+        <div class="concept-box">
+            <h3>Dictionary Key Notation</h3>
+            <p>For accessing items in a dictionary, use square brackets with string keys:</p>
+            <pre><code>// Create a dictionary of equipment
+var equipment = player.GetOrCreateDictionary("equipment");
+
+var helmet = new DataContainer();
+helmet.Set("defense", 5);
+equipment["head"] = helmet;
+
+var chestplate = new DataContainer();
+chestplate.Set("defense", 10);
+equipment["chest"] = chestplate;
+
+// Access dictionary items by key
+int helmetDefense = player.PathGet&lt;int&gt;("equipment[\"head\"].defense");
+int chestDefense = player.PathGet&lt;int&gt;("equipment[\"chest\"].defense");</code></pre>
+            <p>Note that dictionary keys in paths must be enclosed in double quotes with escape characters.</p>
+        </div>
+
+        <div class="concept-box">
+            <h3>Mixed Collection Access</h3>
+            <p>You can combine different access patterns for complex data structures:</p>
+            <pre><code>// Set a value in a nested data structure with collections
+player.PathSet("characters[0].equipment[\"weapon\"].stats.damage", 15);
+
+// Get a value from a complex path
+int damage = player.PathGet&lt;int&gt;("characters[0].equipment[\"weapon\"].stats.damage");</code></pre>
+            <p>This flexibility allows you to model and access even the most complex data hierarchies.</p>
+        </div>
+    </section>
+
+    <section id="auto-creation">
+        <h2>Automatic Path Creation</h2>
+        
+        <div class="concept-box">
+            <h3>Creating Paths on the Fly</h3>
+            <p>When using <code>PathSet</code>, the system automatically creates any missing containers in the path:</p>
+            <pre><code>// This single line will create all necessary containers
+player.PathSet("stats.combat.weapons.sword.damage", 25);
+
+// The full hierarchy is now available
+var damage = player.PathGet&lt;int&gt;("stats.combat.weapons.sword.damage"); // Returns 25</code></pre>
+            <p>This auto-creation makes it easy to build complex data structures without manually creating each container level.</p>
+        </div>
+
+        <div class="concept-box">
+            <h3>Adding to Auto-Created Collections</h3>
+            <p>You can also auto-create and populate lists and dictionaries:</p>
+            <pre><code>// Auto-create a list and its first item
+player.PathSet("inventory[0].name", "Health Potion");
+
+// Auto-create a dictionary and its first entry
+player.PathSet("equipment[\"head\"].name", "Steel Helmet");</code></pre>
+            <p>For list indices beyond the current count, the system will create empty containers to fill the gap.</p>
+        </div>
+    </section>
+
+    <section id="advanced-usage">
+        <h2>Advanced Path Techniques</h2>
+        
+        <div class="concept-box">
+            <h3>Dynamic Path Construction</h3>
+            <p>Paths can be constructed dynamically at runtime:</p>
+            <pre><code>// Dynamic path building
+string characterId = "player1";
+string equipmentSlot = "weapon";
+string statName = "damage";
+
+// Construct the path from variables
+string path = $"{characterId}.equipment[\"{equipmentSlot}\"].stats.{statName}";
+
+// Use the dynamic path
+int damage = gameData.PathGet&lt;int&gt;(path);</code></pre>
+            <p>This is particularly useful for systems where the data structure is determined by user input or game state.</p>
+        </div>
+
+        <div class="concept-box">
+            <h3>Path Utility Methods</h3>
+            <p>DataContainer provides several utility methods for working with paths:</p>
+            <pre><code>// Combine path segments
+string path = DataContainer.CombinePath("inventory", "weapons");
+// Result: "inventory.weapons"
+
+// Get parent path
+string parentPath = DataContainer.GetParentPath("stats.combat.damage");
+// Result: "stats.combat"
+
+// Get the key from a path
+string key = DataContainer.GetPathKey("stats.combat.damage");
+// Result: "damage"</code></pre>
+            <p>These utilities help when programmatically manipulating paths.</p>
+        </div>
+
+        <div class="concept-box">
+            <h3>Path Validation</h3>
+            <p>When working with paths, you can check if a path exists by attempting to get a value and checking if it matches the default:</p>
+            <pre><code>// Attempt to get a value
+int damage = player.PathGet&lt;int&gt;("inventory[0].weapon.damage", -1);
+
+// Check if the path exists (assuming -1 is not a valid damage value)
+bool hasWeaponDamage = damage != -1;
+
+// Conditionally set based on existence
+if (hasWeaponDamage) {
+    // Update the existing value
+    player.PathSet("inventory[0].weapon.damage", damage + 5);
+} else {
+    // Initialize a new weapon
+    player.PathSet("inventory[0].weapon.name", "Basic Sword");
+    player.PathSet("inventory[0].weapon.damage", 10);
+}</code></pre>
+        </div>
+    </section>
+
+    <section id="path-segment-system">
+        <h2>Internal Path Segment System</h2>
+        
+        <div class="concept-box">
+            <h3>The PathSegment Class</h3>
+            <p>Behind the scenes, DataStructure uses a sophisticated path parsing system to efficiently navigate complex data structures. When you use path-based access, the path is parsed into segments that describe each step in the navigation:</p>
+            <pre><code>// This path is parsed into segments internally
+string path = "players[0].equipment[\"weapon\"].stats.damage";
+
+// Internal representation after parsing:
+// Segment 1: Property "players"
+// Segment 2: ListIndex 0
+// Segment 3: Property "equipment"
+// Segment 4: DictionaryKey "weapon"
+// Segment 5: Property "stats"
+// Segment 6: Property "damage"</code></pre>
+            <p>Each segment has a type (Property, ListIndex, or DictionaryKey) and contains the necessary information to navigate that step in the path.</p>
+        </div>
+
+        <div class="concept-box">
+            <h3>Path Parsing and Navigation</h3>
+            <p>When you call <code>PathGet</code> or <code>PathSet</code>, the system:</p>
+            <ol>
+                <li>Parses the path string into PathSegment objects</li>
+                <li>Navigates through each segment sequentially</li>
+                <li>Handles type conversions and missing segments</li>
+                <li>Returns the appropriate value or sets the value at the specified location</li>
+            </ol>
+            <p>This approach provides both flexibility and performance when working with complex nested data structures.</p>
+        </div>
+
+        <div class="concept-box">
+            <h3>Custom Path Handling</h3>
+            <p>Advanced users can utilize the path segment system directly for custom path handling:</p>
+            <pre><code>// Parse a path into segments (internal method)
+List&lt;PathSegment&gt; segments = DataContainer.ParsePath(path);
+
+// Each segment contains:
+// - Raw: The raw segment text
+// - PropertyName: The property name (always present)
+// - Type: The segment type (Property, ListIndex, or DictionaryKey)
+// - ListIndex: The index for list segments
+// - DictionaryKey: The key for dictionary segments</code></pre>
+            <p>While direct use of the path segment system is not typically needed, understanding how it works can help when implementing advanced data management features.</p>
+        </div>
+    </section>
+
+    <section id="best-practices">
+        <h2>Best Practices</h2>
+        
+        <div class="concept-box">
+            <h3>Path Constants</h3>
+            <p>For frequently used paths, define constants to avoid string errors:</p>
+            <pre><code>// Define path constants
+public static class PlayerDataPaths
+{
+    public const string PLAYER_NAME = "profile.name";
+    public const string PLAYER_LEVEL = "profile.level";
+    public const string PLAYER_HEALTH = "stats.health";
+    public const string PLAYER_STRENGTH = "stats.strength";
+    public const string INVENTORY_ITEM_FORMAT = "inventory[{0}]";
+    public const string EQUIPMENT_SLOT_FORMAT = "equipment[\"{0}\"]";
+}
+
+// Use constants for safer access
+string name = playerData.PathGet&lt;string&gt;(PlayerDataPaths.PLAYER_NAME);
+int level = playerData.PathGet&lt;int&gt;(PlayerDataPaths.PLAYER_LEVEL);
+
+// Format for dynamic paths
+string itemPath = string.Format(PlayerDataPaths.INVENTORY_ITEM_FORMAT, 0);
+string weaponPath = string.Format(PlayerDataPaths.EQUIPMENT_SLOT_FORMAT, "weapon");</code></pre>
+            <p>This approach reduces typos and makes refactoring easier.</p>
+        </div>
+
+        <div class="concept-box">
+            <h3>Error Handling</h3>
+            <p>Always provide default values for <code>PathGet</code> operations to handle missing paths gracefully:</p>
+            <pre><code>// Set a default value for missing data
+int strength = player.PathGet&lt;int&gt;("stats.strength", 10);
+
+// For more complex error handling, check existence first
+if (player.PathExists("inventory[0]")) {
+    var item = player.PathGet&lt;DataContainer&gt;("inventory[0]");
+    // Process the item
+} else {
+    Debug.LogWarning("Player has no inventory items");
+    // Handle empty inventory case
+}</code></pre>
+        </div>
+
+        <div class="concept-box">
+            <h3>Path Traversal for Validation</h3>
+            <p>Use path traversal to validate data structures or collect information:</p>
+            <pre><code>// Example: Validate all items in inventory have required fields
+var inventory = player.Get&lt;List&lt;DataContainer&gt;&gt;("inventory");
+if (inventory != null) {
+    for (int i = 0; i < inventory.Count; i++) {
+        string path = $"inventory[{i}]";
+        
+        // Check required fields
+        if (!player.PathExists($"{path}.name")) {
+            Debug.LogError($"Item at {path} missing name!");
+        }
+        
+        if (!player.PathExists($"{path}.type")) {
+            Debug.LogError($"Item at {path} missing type!");
+        }
+    }
+}</code></pre>
+        </div>
+    </section>
+
+    <section id="limitations">
+        <h2>Limitations and Considerations</h2>
+        
+        <div class="info-box">
+            <h4>Performance Considerations</h4>
+            <p>While path-based access is convenient, it involves more overhead than direct access:</p>
+            <ul>
+                <li>Each path access requires parsing the path string</li>
+                <li>Multiple lookups are performed for each path segment</li>
+                <li>For frequently accessed data in performance-critical code, consider caching the reference</li>
+            </ul>
+            <pre><code>// For frequently accessed data, cache the container
+var statsContainer = player.PathGet&lt;DataContainer&gt;("stats");
+
+// Then use direct access
+int strength = statsContainer.Get&lt;int&gt;("strength");
+int agility = statsContainer.Get&lt;int&gt;("agility");</code></pre>
+        </div>
+
+        <div class="info-box">
+            <h4>Type Limitations</h4>
+            <p>Path access has some type limitations to be aware of:</p>
+            <ul>
+                <li>PathGet can return any serializable type or DataContainer</li>
+                <li>PathSet can set any serializable type</li>
+                <li>For complex operations on collections, you may need to get the collection first, modify it, then set it back</li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="next-steps">
+        <h2>Next Steps</h2>
+        <div class="doc-grid">
+            <div class="doc-card">
+                <h3>Collections</h3>
+                <p>Learn more about working with lists and dictionaries in DataStructure.</p>
+                <a href="advanced-collections.html" class="doc-button">Collections →</a>
+            </div>
+            <div class="doc-card">
+                <h3>Unity Object References</h3>
+                <p>Discover how to store and manage Unity object references in your data.</p>
+                <a href="advanced-unity-references.html" class="doc-button">Object References →</a>
+            </div>
+            <div class="doc-card">
+                <h3>Serialization</h3>
+                <p>Master the serialization capabilities for data persistence and networking.</p>
+                <a href="advanced-serialization.html" class="doc-button">Serialization →</a>
+            </div>
+        </div>
+    </section>
+
+    <a href="index.html" class="back-link">← Back to Home</a>
+
+    <footer>
+        <p>GAOS DataStructure | <a href="index.html">Home</a> | <a href="https://www.linkedin.com/in/yugao-luckyvr">Yu Gao</a></p>
+    </footer>
+</body>
+</html> 

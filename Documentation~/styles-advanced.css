@@ -1,0 +1,135 @@
+/* Advanced section styling */
+:root {
+    --advanced-orange-light: #FFA726;
+    --advanced-orange-dark: #FF9800;
+    --advanced-orange-deep: #F57C00;
+}
+
+/* Advanced layout */
+.advanced-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin: 2rem 0;
+}
+
+/* Advanced intro section */
+.advanced-intro {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.advanced-title {
+    color: var(--advanced-orange-dark);
+    font-size: 2.2rem;
+    margin-bottom: 1.5rem;
+}
+
+.advanced-intro p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+}
+
+.advanced-button {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: var(--advanced-orange-dark);
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    align-self: flex-start;
+    font-weight: 500;
+}
+
+.advanced-button:hover {
+    background: var(--advanced-orange-deep);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
+    text-decoration: none;
+}
+
+/* Topic cards for advanced section */
+.topic-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border-top: 3px solid var(--advanced-orange-light);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.topic-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.topic-card h3 {
+    color: var(--advanced-orange-dark);
+    margin-bottom: 1rem;
+}
+
+.topic-card p {
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.topic-button {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: var(--advanced-orange-dark);
+    color: white;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.topic-button:hover {
+    background: var(--advanced-orange-deep);
+    transform: translateY(-2px);
+    text-decoration: none;
+}
+
+/* Advanced topics with more space */
+.advanced-section {
+    padding: 2rem;
+    margin: 4rem 0;
+    background: #f9f9f9;
+    border-radius: 12px;
+}
+
+.advanced-section h2 {
+    color: var(--advanced-orange-dark);
+    margin-bottom: 2rem;
+}
+
+.advanced-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .advanced-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .advanced-intro {
+        padding: 1rem;
+        text-align: center;
+    }
+    
+    .advanced-button {
+        align-self: center;
+    }
+    
+    .advanced-grid {
+        grid-template-columns: 1fr;
+    }
+} 

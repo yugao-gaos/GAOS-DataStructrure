@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Core Concepts - GAOS DataStructure</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Core Concepts</h1>
+        <p>Understanding the fundamentals of GAOS DataStructure</p>
+    </header>
+
+    <div class="nav-links">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="quick-start.html">Quick Start</a></li>
+            <li><a href="api.html">API Reference</a></li>
+        </ul>
+    </div>
+
+    <section id="overview">
+        <h2>Overview</h2>
+        <p>GAOS DataStructure is built on a few core concepts that work together to provide a flexible and powerful data management system for Unity projects. Understanding these concepts will help you effectively use the package in your applications.</p>
+    </section>
+
+    <section id="data-container">
+        <h2>Data Container</h2>
+        
+        <div class="concept-box">
+            <h3>What is a DataContainer?</h3>
+            <p>The <code>DataContainer</code> is the fundamental building block in the GAOS DataStructure system. It's a generic key-value store that can hold:</p>
+            <ul>
+                <li>Primitive types (int, float, string, bool, etc.)</li>
+                <li>Complex types like Vector3, Color, and custom serializable classes</li>
+                <li>Unity Object references (GameObjects, Components, ScriptableObjects, etc.)</li>
+                <li>Nested DataContainers for hierarchical structures</li>
+                <li>Lists and dictionaries for collection data</li>
+            </ul>
+            <p>The DataContainer provides a unified approach to storing, retrieving, and manipulating data regardless of its type.</p>
+        </div>
+
+        <div class="concept-box">
+            <h3>Key Features</h3>
+            <p>DataContainer includes several important features:</p>
+            <ul>
+                <li><strong>Type Safety</strong>: Generic Get&lt;T&gt; and Set&lt;T&gt; methods ensure type safety</li>
+                <li><strong>Null Safety</strong>: Optional default values when accessing data</li>
+                <li><strong>Serialization</strong>: Built-in JSON serialization and deserialization</li>
+                <li><strong>Path Access</strong>: Dot-notation for accessing nested data</li>
+                <li><strong>Deep Copy</strong>: Create independent copies of data structures</li>
+                <li><strong>Change Observation</strong>: Subscribe to data changes</li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="hierarchical-data">
+        <h2>Hierarchical Data</h2>
+        
+        <div class="concept-box">
+            <h3>Nested Containers</h3>
+            <p>DataContainers can be nested within other containers to create hierarchical data structures. This approach allows for organizing complex data in a natural way:</p>
+            <pre><code>var player = new DataContainer();
+player.Set("name", "Hero");
+
+// Create a nested container for stats
+var stats = player.GetOrCreateContainer("stats");
+stats.Set("strength", 15);
+stats.Set("agility", 12);
+stats.Set("intelligence", 10);</code></pre>
+        </div>
+
+        <div class="concept-box">
+            <h3>Path-Based Access</h3>
+            <p>You can access nested data using path notation with the <code>PathGet</code> and <code>PathSet</code> methods:</p>
+            <pre><code>// Set a nested value using path notation
+player.PathSet("inventory.weapon.name", "Excalibur");
+
+// Get a nested value using path notation
+int strength = player.PathGet&lt;int&gt;("stats.strength");
+Debug.Log($"Strength: {strength}");</code></pre>
+            <p>Path notation supports:</p>
+            <ul>
+                <li>Dot notation for nested containers: <code>"stats.strength"</code></li>
+                <li>Array indexing for lists: <code>"inventory[0].name"</code></li>
+                <li>Dictionary keys: <code>"equipment[\"weapon\"].damage"</code></li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="collections">
+        <h2>Collections</h2>
+        
+        <div class="concept-box">
+            <h3>Lists</h3>
+            <p>DataContainer can store and manage lists of items:</p>
+            <pre><code>// Create a list of inventory items
+var inventory = player.GetOrCreateList("inventory");
+
+// Add containers to the list
+var sword = new DataContainer();
+sword.Set("name", "Steel Sword");
+sword.Set("damage", 10);
+inventory.Add(sword);
+
+// Access items by index
+string firstItemName = player.PathGet&lt;string&gt;("inventory[0].name");</code></pre>
+        </div>
+
+        <div class="concept-box">
+            <h3>Dictionaries</h3>
+            <p>DataContainer supports ordered dictionaries with string keys:</p>
+            <pre><code>// Create a dictionary of equipment
+var equipment = player.GetOrCreateDictionary("equipment");
+
+// Add items to the dictionary
+var helmet = new DataContainer();
+helmet.Set("defense", 5);
+equipment["head"] = helmet;
+
+var chestplate = new DataContainer();
+chestplate.Set("defense", 10);
+equipment["chest"] = chestplate;
+
+// Access dictionary items by key
+int helmetDefense = player.PathGet&lt;int&gt;("equipment[\"head\"].defense");</code></pre>
+            <p>DataStructure uses an <code>OrderedDictionary</code> class that preserves the insertion order of keys, unlike standard .NET Dictionaries.</p>
+        </div>
+    </section>
+
+    <section id="unity-integration">
+        <h2>Unity Integration</h2>
+        
+        <div class="concept-box">
+            <h3>DataStructure</h3>
+            <p>A <code>DataStructure</code> is a ScriptableObject that serves as a template for data:</p>
+            <ul>
+                <li>Contains a root DataContainer that defines the structure</li>
+                <li>Can be created in the Unity Editor or at runtime</li>
+                <li>Serves as a template for creating instances</li>
+                <li>Perfect for defining character classes, item templates, game settings, etc.</li>
+            </ul>
+            <p>DataStructures are created as assets in your Unity project and can be managed through the Unity Editor.</p>
+        </div>
+
+        <div class="concept-box">
+            <h3>DataInstance</h3>
+            <p>A <code>DataInstance</code> is a specialized ScriptableObject that:</p>
+            <ul>
+                <li>References a parent DataStructure as its template</li>
+                <li>Stores only the overridden values instead of a full copy</li>
+                <li>Provides a runtime container that combines the template with overrides</li>
+                <li>Allows for efficient creation of variations from a template</li>
+            </ul>
+            <p>This pattern is ideal for creating data instances like specific character builds, item variants, or level configurations while maintaining a link to their base template.</p>
+        </div>
+
+        <div class="concept-box">
+            <h3>Unity Object References</h3>
+            <p>DataContainer can store references to Unity objects like:</p>
+            <ul>
+                <li>GameObjects and Prefabs</li>
+                <li>Components (Transform, Renderer, etc.)</li>
+                <li>Assets (Sprite, Material, AudioClip, etc.)</li>
+                <li>ScriptableObjects (including custom types)</li>
+            </ul>
+            <p>These references are properly maintained during serialization and deserialization.</p>
+            <pre><code>// Store references to Unity objects
+container.Set("playerPrefab", playerPrefabReference);
+container.Set("icon", spriteReference);
+container.Set("settings", gameSettingsReference);
+
+// Retrieve references
+GameObject prefab = container.Get&lt;GameObject&gt;("playerPrefab");
+Sprite icon = container.Get&lt;Sprite&gt;("icon");</code></pre>
+        </div>
+    </section>
+
+    <section id="serialization">
+        <h2>Serialization</h2>
+        
+        <div class="concept-box">
+            <h3>JSON Serialization</h3>
+            <p>DataContainer implements the <code>IDataSerializable</code> interface, providing methods to convert data to and from JSON:</p>
+            <pre><code>// Convert to JSON
+string json = container.ToJson();
+
+// Load from JSON
+container.FromJson(json);</code></pre>
+            <p>This allows for easy data persistence, save systems, or network transmission.</p>
+        </div>
+
+        <div class="concept-box">
+            <h3>Unity Serialization</h3>
+            <p>DataContainer also works with Unity's serialization system when contained within MonoBehaviours or ScriptableObjects, ensuring data is properly saved with the scene or asset.</p>
+        </div>
+    </section>
+
+    <section id="observer-pattern">
+        <h2>Observer Pattern</h2>
+        
+        <div class="concept-box">
+            <h3>Change Notifications</h3>
+            <p>DataContainer supports an observer pattern allowing you to subscribe to data changes:</p>
+            <pre><code>// Subscribe to changes
+container.AddObserver(OnDataChanged);
+
+// Define callback
+private void OnDataChanged(string key, object oldValue, object newValue)
+{
+    Debug.Log($"Value changed: {key} from {oldValue} to {newValue}");
+    
+    // Respond to specific changes
+    if (key == "health") {
+        UpdateHealthUI((float)newValue);
+    }
+}</code></pre>
+            <p>This is particularly useful for UI elements, gameplay systems, or other components that need to react to data changes.</p>
+        </div>
+    </section>
+
+    <section id="next-steps">
+        <h2>Next Steps</h2>
+        <div class="doc-grid">
+            <div class="doc-card">
+                <h3>Quick Start Guide</h3>
+                <p>Ready to start using DataStructure? Check our quick start guide for step-by-step instructions.</p>
+                <a href="quick-start.html" class="doc-button">Quick Start →</a>
+            </div>
+            <div class="doc-card">
+                <h3>Advanced Topics</h3>
+                <p>Explore advanced features and patterns for using DataStructure effectively.</p>
+                <a href="advanced.html" class="doc-button">Advanced Topics →</a>
+            </div>
+            <div class="doc-card">
+                <h3>Path-Based Access</h3>
+                <p>Dive deeper into the powerful path notation system.</p>
+                <a href="advanced-path-access.html" class="doc-button">Learn Path Access →</a>
+            </div>
+        </div>
+    </section>
+
+    <a href="index.html" class="back-link">← Back to Home</a>
+
+    <footer>
+        <p>GAOS DataStructure | <a href="index.html">Home</a> | <a href="https://www.linkedin.com/in/yugao-luckyvr">Yu Gao</a></p>
+    </footer>
+</body>
+</html> 

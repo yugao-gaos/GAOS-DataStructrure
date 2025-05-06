@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Observer Pattern - GAOS DataStructure</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles-advanced.css">
+</head>
+<body>
+    <header>
+        <h1>Observer Pattern</h1>
+        <p>Implement reactive data systems with GAOS DataStructure</p>
+    </header>
+
+    <div class="nav-links">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="quick-start.html">Quick Start</a></li>
+            <li><a href="concepts.html">Core Concepts</a></li>
+            <li><a href="advanced.html">Advanced Topics</a></li>
+            <li><a href="api.html">API Reference</a></li>
+        </ul>
+    </div>
+
+    <section id="introduction">
+        <h2>Reactive Data with the Observer Pattern</h2>
+        <p>One of the powerful features of DataStructure is its built-in support for the Observer pattern, which allows your systems to automatically react to data changes. This enables you to build responsive, event-driven applications where UI elements, game mechanics, and other systems update dynamically as your data changes.</p>
+    </section>
+
+    <section id="data-change-events">
+        <h2>Data Change Events</h2>
+        
+        <div class="concept-box">
+            <h3>Basic Change Notifications</h3>
+            <p>DataStructure provides a system for registering callbacks that are triggered when data changes:</p>
+            <pre><code>// Get a reference to your data instance
+var playerData = DataService.GetInstance&lt;DataInstance&gt;("PlayerData");
+
+// Register a callback for all data changes
+playerData.Container.AddObserver((key, oldValue, newValue) => {
+    if (key == "health") {
+        Debug.Log($"Player health changed from {oldValue} to {newValue}");
+        
+        // Update UI or game logic
+        UpdateHealthBar((float)newValue);
+    }
+});</code></pre>
+            <p>This allows you to keep various parts of your game in sync with your data model.</p>
+        </div>
+
+        <div class="concept-box alert-box">
+            <h3>Coming Soon: Path-Based Observation</h3>
+            <p><strong>Note:</strong> The following path-based functionality is not yet implemented in the current version.</p>
+            <p>In future releases, you'll be able to observe changes at any level in your data hierarchy using path notation:</p>
+            <pre><code>// This functionality is not yet implemented
+// Observe changes to a nested value
+playerData.Container.OnPathValueChanged("stats.strength", (newValue) => {
+    Debug.Log($"Player strength changed to: {newValue}");
+    UpdateStrengthUI((int)newValue);
+});</code></pre>
+        </div>
+
+        <div class="concept-box alert-box">
+            <h3>Coming Soon: Container-Level Observation</h3>
+            <p><strong>Note:</strong> The following container-level functionality is not yet implemented in the current version.</p>
+            <p>In future releases, you'll be able to register for notifications of any change within a container or subcontainer:</p>
+            <pre><code>// This functionality is not yet implemented
+// Get notified of any change in the stats container
+playerData.Container.OnContainerChanged("stats", () => {
+    Debug.Log("Player stats were updated");
+    RefreshStatsPanel();
+});</code></pre>
+        </div>
+    </section>
+
+    <section id="ui-binding">
+        <h2>UI Data Binding</h2>
+        
+        <div class="concept-box">
+            <h3>Automatic UI Updates</h3>
+            <p>You can use the observer pattern to keep UI elements in sync with your data:</p>
+            <pre><code>// Create a class that binds data to UI elements
+public class PlayerStatsUI : MonoBehaviour
+{
+    [SerializeField] private Text nameText;
+    [SerializeField] private Text levelText;
+    [SerializeField] private Slider healthSlider;
+    
+    private DataInstance playerData;
+    
+    private void Start()
+    {
+        // Get a reference to the player data
+        playerData = DataService.GetInstance&lt;DataInstance&gt;("PlayerData");
+        
+        // Bind UI elements to data values
+        BindUI();
+        
+        // Initial update
+        UpdateUI();
+    }
+    
+    private void BindUI()
+    {
+        // Register a single callback for all data changes
+        playerData.Container.AddObserver((key, oldValue, newValue) => {
+            // Check which value changed and update appropriate UI
+            switch(key) {
+                case "playerName":
+                    nameText.text = (string)newValue;
+                    break;
+                case "level":
+                    levelText.text = $"Level: {(int)newValue}";
+                    break;
+                case "health":
+                    healthSlider.value = (float)newValue / 100f; // Assuming max health is 100
+                    break;
+            }
+        });
+    }
+    
+    private void UpdateUI()
+    {
+        // Initial update of all UI elements
+        nameText.text = playerData.Container.Get&lt;string&gt;("playerName");
+        levelText.text = $"Level: {playerData.Container.Get&lt;int&gt;("level")}";
+        healthSlider.value = playerData.Container.Get&lt;float&gt;("health") / 100f;
+    }
+    
+    private void OnDestroy()
+    {
+        // Important: Unregister callbacks when the object is destroyed
+        // to prevent memory leaks
+        if (playerData != null && playerData.Container != null)
+        {
+            playerData.Container.RemoveObserver(this.Observer);
+        }
+    }
+}</code></pre>
+        </div>
+    </section>
+
+    <section id="data-driven-systems">
+        <h2>Creating Data-Driven Systems</h2>
+        
+        <div class="concept-box">
+            <h3>Game Mechanics</h3>
+            <p>Use the observer pattern to drive game mechanics based on data changes:</p>
+            <pre><code>// Create a system that reacts to player level changes
+public class LevelUpSystem : MonoBehaviour
+{
+    private DataInstance playerData;
+    private Action&lt;string, object, object&gt; dataObserver;
+    
+    private void Start()
+    {
+        playerData = DataService.GetInstance&lt;DataInstance&gt;("PlayerData");
+        
+        // Create and store observer for proper cleanup
+        dataObserver = (key, oldValue, newValue) => {
+            // Check if level changed
+            if (key == "level") {
+                int newLevel = (int)newValue;
+                OnPlayerLevelUp(newLevel);
+            }
+        };
+        
+        // Register for data change events
+        playerData.Container.AddObserver(dataObserver);
+    }
+    
+    private void OnPlayerLevelUp(int newLevel)
+    {
+        // Increase player stats based on level
+        float healthBonus = newLevel * 10f;
+        float currentHealth = playerData.Container.Get&lt;float&gt;("health");
+        float maxHealth = playerData.Container.Get&lt;float&gt;("maxHealth");
+        
+        // Update max health
+        playerData.Container.Set("maxHealth", maxHealth + healthBonus);
+        
+        // Fully heal player on level up
+        playerData.Container.Set("health", playerData.Container.Get&lt;float&gt;("maxHealth"));
+        
+        // Add ability points
+        int abilityPoints = playerData.Container.Get&lt;int&gt;("abilityPoints", 0);
+        playerData.Container.Set("abilityPoints", abilityPoints + 2);
+        
+        // Play level up effects
+        PlayLevelUpEffect();
+    }
+    
+    private void PlayLevelUpEffect()
+    {
+        // Visual and audio feedback for level up
+        Debug.Log("Level up effect played");
+    }
+    
+    private void OnDestroy()
+    {
+        // Remove observer when component is destroyed
+        if (playerData != null && playerData.Container != null && dataObserver != null)
+        {
+            playerData.Container.RemoveObserver(dataObserver);
+        }
+    }
+}</code></pre>
+        </div>
+    </section>
+
+    <section id="best-practices">
+        <h2>Best Practices</h2>
+        
+        <div class="concept-box">
+            <h3>Memory Management</h3>
+            <p>When using the observer pattern, it's important to properly manage your event subscriptions to prevent memory leaks:</p>
+            <pre><code>// Store reference to your callback
+private Action&lt;string, object, object&gt; dataObserver;
+
+private void Start()
+{
+    // Create and store the callback
+    dataObserver = (key, oldValue, newValue) => {
+        if (key == "health") {
+            UpdateHealthUI((float)newValue);
+        }
+    };
+    
+    // Register the callback
+    playerData.Container.AddObserver(dataObserver);
+}
+
+private void OnDestroy()
+{
+    // Important: Unregister callbacks when the object is destroyed
+    if (playerData != null && playerData.Container != null && dataObserver != null)
+    {
+        playerData.Container.RemoveObserver(dataObserver);
+    }
+}</code></pre>
+        </div>
+
+        <div class="concept-box">
+            <h3>Performance Considerations</h3>
+            <ul>
+                <li><strong>Avoid infinite loops:</strong> Be careful not to create circular references where data changes trigger updates that modify the same data.</li>
+                <li><strong>Throttle frequent updates:</strong> For rapidly changing values, consider throttling or debouncing your callbacks to prevent performance issues.</li>
+                <li><strong>Filter in your callback:</strong> Since the current implementation notifies on all changes, use conditions in your callback to filter for the specific keys you're interested in.</li>
+            </ul>
+        </div>
+    </section>
+
+    <a href="advanced.html" class="back-link">← Back to Advanced Topics</a>
+
+    <footer>
+        <p>GAOS DataStructure | <a href="index.html">Home</a> | <a href="https://www.linkedin.com/in/yugao-luckyvr">Yu Gao</a></p>
+    </footer>
+</body>
+</html> 

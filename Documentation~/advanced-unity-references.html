@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unity Object References - GAOS DataStructure</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles-advanced.css">
+</head>
+<body>
+    <header>
+        <h1>Unity Object References</h1>
+        <p>Store and manage Unity objects within the DataStructure system</p>
+    </header>
+
+    <div class="nav-links">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="advanced.html">Advanced Topics</a></li>
+            <li><a href="advanced-collections.html">Collections</a></li>
+        </ul>
+    </div>
+
+    <section id="introduction">
+        <h2>Working with Unity Objects</h2>
+        <p>One of the powerful features of the DataStructure system is its ability to store and maintain references to Unity objects. This allows you to combine your data-driven architecture with Unity's component-based design, creating flexible and dynamic systems.</p>
+        
+        <div class="info-box">
+            <h4>Supported Unity Object Types</h4>
+            <p>DataStructure can store references to any type that inherits from UnityEngine.Object, including:</p>
+            <ul>
+                <li>GameObjects and Prefabs</li>
+                <li>Components (Transform, Renderer, custom MonoBehaviours, etc.)</li>
+                <li>ScriptableObjects</li>
+                <li>Assets (Textures, Materials, Meshes, AudioClips, etc.)</li>
+                <li>Scenes</li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="storing-references">
+        <h2>Storing Unity Object References</h2>
+        
+        <div class="concept-box">
+            <h3>Basic Reference Storage</h3>
+            <p>Store references to Unity objects using the standard Set and Get methods:</p>
+            <pre><code>// Create a data container
+var playerData = new DataContainer();
+
+// Store references to Unity objects
+playerData.Set("prefab", playerPrefab);        // GameObject reference
+playerData.Set("sprite", characterSprite);      // Sprite reference
+playerData.Set("material", characterMaterial);  // Material reference
+playerData.Set("audio", jumpSound);            // AudioClip reference
+
+// Retrieve the references
+GameObject prefab = playerData.Get&lt;GameObject&gt;("prefab");
+Sprite sprite = playerData.Get&lt;Sprite&gt;("sprite");
+Material material = playerData.Get&lt;Material&gt;("material");
+AudioClip audio = playerData.Get&lt;AudioClip&gt;("audio");</code></pre>
+        </div>
+
+        <div class="concept-box">
+            <h3>Component References</h3>
+            <p>Store references to components on GameObjects:</p>
+            <pre><code>// Get components to store
+Transform playerTransform = player.transform;
+Renderer playerRenderer = player.GetComponent&lt;Renderer&gt;();
+PlayerController controller = player.GetComponent&lt;PlayerController&gt;();
+
+// Store component references
+var componentData = new DataContainer();
+componentData.Set("transform", playerTransform);
+componentData.Set("renderer", playerRenderer);
+componentData.Set("controller", controller);
+
+// Retrieve component references
+Transform transform = componentData.Get&lt;Transform&gt;("transform");
+Renderer renderer = componentData.Get&lt;Renderer&gt;("renderer");
+PlayerController ctrl = componentData.Get&lt;PlayerController&gt;("controller");</code></pre>
+        </div>
+
+        <div class="concept-box">
+            <h3>ScriptableObject References</h3>
+            <p>Store references to ScriptableObject assets:</p>
+            <pre><code>// References to ScriptableObjects
+GameSettings settings = Resources.Load&lt;GameSettings&gt;("Settings/GameSettings");
+ItemDatabase itemDB = Resources.Load&lt;ItemDatabase&gt;("Data/ItemDatabase");
+
+// Store in container
+var gameData = new DataContainer();
+gameData.Set("settings", settings);
+gameData.Set("itemDB", itemDB);
+
+// Retrieve and use
+GameSettings gameSettings = gameData.Get&lt;GameSettings&gt;("settings");
+if (gameSettings != null) {
+    float musicVolume = gameSettings.MusicVolume;
+}</code></pre>
+        </div>
+    </section>
+
+    <section id="serialization-references">
+        <h2>Serialization of Unity References</h2>
+        
+        <div class="concept-box">
+            <h3>Runtime vs. Serialized References</h3>
+            <p>Unity object references behave differently depending on the serialization context:</p>
+            <ul>
+                <li><strong>In-memory runtime</strong>: References work like any other object reference</li>
+                <li><strong>JSON serialization</strong>: References are serialized as instance IDs or asset paths</li>
+                <li><strong>Unity serialization</strong>: References are maintained through Unity's serialization system</li>
+            </ul>
+            <p>When working with Unity object references across serialization boundaries, be aware of these differences.</p>
+        </div>
+
+        <div class="concept-box">
+            <h3>JSON Serialization Strategy</h3>
+            <p>By default, when a DataContainer with Unity references is serialized to JSON:</p>
+            <ul>
+                <li>References to assets in Resources folder use resource paths</li>
+                <li>References to scene objects use instance IDs</li>
+                <li>References to prefabs use asset paths</li>
+            </ul>
+            <p>This means that asset references can be restored when loading the JSON, but scene object references might not survive scene transitions.</p>
+            <pre><code>// Store a reference to a prefab from Resources
+var itemPrefab = Resources.Load&lt;GameObject&gt;("Prefabs/Item");
+container.Set("itemPrefab", itemPrefab);
+
+// Serialize to JSON (the prefab path is serialized)
+string json = container.ToJson();
+Debug.Log(json);  // Contains reference to "Prefabs/Item"
+
+// Later, deserialize from JSON
+var loadedContainer = new DataContainer();
+loadedContainer.FromJson(json);
+
+// The prefab reference is restored automatically
+GameObject itemPrefab = loadedContainer.Get&lt;GameObject&gt;("itemPrefab");</code></pre>
+        </div>
+    </section>
+
+    <section id="object-reference-patterns">
+        <h2>Unity Object Reference Patterns</h2>
+        
+        <div class="concept-box">
+            <h3>Object Lookup Tables</h3>
+            <p>Create dictionary-based lookup tables for runtime object access:</p>
+            <pre><code>// Create a registry of game objects
+var objectRegistry = new DataContainer();
+var objects = objectRegistry.GetOrCreateDictionary("gameObjects");
+
+// Register objects by ID
+GameObject player = GameObject.Find("Player");
+GameObject mainCamera = Camera.main.gameObject;
+GameObject levelManager = GameObject.Find("LevelManager");
+
+objects["player"] = new DataContainer().Set("reference", player);
+objects["mainCamera"] = new DataContainer().Set("reference", mainCamera);
+objects["levelManager"] = new DataContainer().Set("reference", levelManager);
+
+// Look up objects by ID
+GameObject playerObj = objectRegistry.PathGet&lt;GameObject&gt;("gameObjects[\"player\"].reference");
+GameObject cameraObj = objectRegistry.PathGet&lt;GameObject&gt;("gameObjects[\"mainCamera\"].reference");</code></pre>
+        </div>
+
+        <div class="concept-box">
+            <h3>Prefab Instance Management</h3>
+            <p>Manage instances created from prefabs with additional data:</p>
+            <pre><code>// Store reference to a prefab
+var enemyData = new DataContainer();
+enemyData.Set("prefab", goblinPrefab);
+enemyData.Set("health", 50);
+enemyData.Set("damage", 10);
+enemyData.Set("spawnCount", 0);
+
+// Create instances based on data
+public GameObject SpawnEnemy(DataContainer enemyData, Vector3 position) {
+    // Get the prefab reference
+    GameObject prefab = enemyData.Get&lt;GameObject&gt;("prefab");
+    if (prefab == null) return null;
+    
+    // Create instance
+    GameObject instance = Instantiate(prefab, position, Quaternion.identity);
+    
+    // Configure the instance based on data
+    EnemyController controller = instance.GetComponent&lt;EnemyController&gt;();
+    if (controller != null) {
+        controller.SetHealth(enemyData.Get&lt;int&gt;("health"));
+        controller.SetDamage(enemyData.Get&lt;int&gt;("damage"));
+    }
+    
+    // Track spawns
+    enemyData.Set("spawnCount", enemyData.Get&lt;int&gt;("spawnCount") + 1);
+    
+    return instance;
+}</code></pre>
+        </div>
+
+        <div class="concept-box">
+            <h3>Asset Reference Management</h3>
+            <p>Create systems for managing game assets through DataStructure:</p>
+            <pre><code>// Asset management system
+public class AssetManager : MonoBehaviour {
+    private DataContainer assetRegistry = new DataContainer();
+    
+    void Awake() {
+        // Initialize asset categories
+        assetRegistry.GetOrCreateDictionary("textures");
+        assetRegistry.GetOrCreateDictionary("materials");
+        assetRegistry.GetOrCreateDictionary("prefabs");
+        assetRegistry.GetOrCreateDictionary("audio");
+        
+        // Load common assets
+        LoadCommonAssets();
+    }
+    
+    void LoadCommonAssets() {
+        // Textures
+        var textures = assetRegistry.Get&lt;Dictionary&lt;string, DataContainer&gt;&gt;("textures");
+        textures["grass"] = new DataContainer().Set("asset", Resources.Load&lt;Texture&gt;("Textures/Grass"));
+        textures["rock"] = new DataContainer().Set("asset", Resources.Load&lt;Texture&gt;("Textures/Rock"));
+        
+        // Materials
+        var materials = assetRegistry.Get&lt;Dictionary&lt;string, DataContainer&gt;&gt;("materials");
+        materials["metal"] = new DataContainer().Set("asset", Resources.Load&lt;Material&gt;("Materials/Metal"));
+        
+        // Prefabs
+        var prefabs = assetRegistry.Get&lt;Dictionary&lt;string, DataContainer&gt;&gt;("prefabs");
+        prefabs["crate"] = new DataContainer().Set("asset", Resources.Load&lt;GameObject&gt;("Prefabs/Crate"));
+    }
+    
+    // Get asset by category and key
+    public T GetAsset&lt;T&gt;(string category, string key) where T : UnityEngine.Object {
+        return assetRegistry.PathGet&lt;T&gt;($"{category}[\"{key}\"].asset");
+    }
+}</code></pre>
+        </div>
+    </section>
+
+    <section id="scene-object-references">
+        <h2>Scene Object References</h2>
+        
+        <div class="concept-box">
+            <h3>Tracking Scene Objects</h3>
+            <p>Create systems to track and manage scene object references:</p>
+            <pre><code>public class SceneObjectTracker : MonoBehaviour {
+    private static DataContainer sceneObjects = new DataContainer();
+    
+    // Register an object with an ID
+    public static void RegisterObject(string id, GameObject obj) {
+        var objects = sceneObjects.GetOrCreateDictionary("objects");
+        objects[id] = new DataContainer().Set("reference", obj);
+    }
+    
+    // Get a registered object
+    public static GameObject GetObject(string id) {
+        return sceneObjects.PathGet&lt;GameObject&gt;($"objects[\"{id}\"].reference");
+    }
+    
+    // Remove an object
+    public static void UnregisterObject(string id) {
+        var objects = sceneObjects.Get&lt;Dictionary&lt;string, DataContainer&gt;&gt;("objects");
+        if (objects != null && objects.ContainsKey(id)) {
+            objects.Remove(id);
+        }
+    }
+}
+
+// Usage in other scripts
+void Start() {
+    // Register this GameObject
+    SceneObjectTracker.RegisterObject("Player", gameObject);
+}
+
+void OnDestroy() {
+    // Unregister when destroyed
+    SceneObjectTracker.UnregisterObject("Player");
+}</code></pre>
+        </div>
+
+        <div class="concept-box">
+            <h3>Object Reference with User Data</h3>
+            <p>Store additional metadata alongside object references:</p>
+            <pre><code>// Track interactive objects with metadata
+var interactiveObjects = new DataContainer();
+var objects = interactiveObjects.GetOrCreateList("objects");
+
+// Add objects with metadata
+var doorObj = new DataContainer();
+doorObj.Set("reference", doorGameObject);
+doorObj.Set("type", "door");
+doorObj.Set("isLocked", true);
+doorObj.Set("requiredKeyID", "rusty_key");
+objects.Add(doorObj);
+
+var chestObj = new DataContainer();
+chestObj.Set("reference", treasureChestGameObject);
+chestObj.Set("type", "chest");
+chestObj.Set("isLocked", false);
+chestObj.Set("lootTable", "common_treasure");
+objects.Add(chestObj);
+
+// Find objects by type
+GameObject FindObjectOfType(string type) {
+    var objectsList = interactiveObjects.Get&lt;List&lt;DataContainer&gt;&gt;("objects");
+    if (objectsList == null) return null;
+    
+    foreach (var obj in objectsList) {
+        if (obj.Get&lt;string&gt;("type") == type) {
+            return obj.Get&lt;GameObject&gt;("reference");
+        }
+    }
+    
+    return null;
+}</code></pre>
+        </div>
+    </section>
+
+    <section id="cross-scene-persistence">
+        <h2>Cross-Scene Object Persistence</h2>
+        
+        <div class="concept-box">
+            <h3>Persistent Object References</h3>
+            <p>Handle object references across scene transitions:</p>
+            <pre><code>public class GameManager : MonoBehaviour {
+    // Make this a singleton that survives scene loads
+    public static GameManager Instance { get; private set; }
+    
+    // Container for persistent data
+    private DataContainer gameState = new DataContainer();
+    
+    void Awake() {
+        if (Instance == null) {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        } else {
+            Destroy(gameObject);
+        }
+    }
+    
+    // Store object metadata that will survive scene transitions
+    public void RegisterPersistentObject(GameObject obj, string id) {
+        var objects = gameState.GetOrCreateDictionary("persistentObjects");
+        
+        var data = new DataContainer();
+        data.Set("id", id);
+        data.Set("prefabPath", GetPrefabPath(obj));
+        data.Set("position", obj.transform.position);
+        data.Set("rotation", obj.transform.rotation);
+        data.Set("scale", obj.transform.localScale);
+        
+        objects[id] = data;
+    }
+    
+    // Get prefab path for an instantiated object (example implementation)
+    private string GetPrefabPath(GameObject obj) {
+        // This would need to be implemented based on your project's asset structure
+        // For example, you might use a component that stores this information
+        var prefabInfo = obj.GetComponent&lt;PrefabInfo&gt;();
+        return prefabInfo != null ? prefabInfo.prefabPath : "";
+    }
+    
+    // Load persistent objects in new scene
+    public void RestorePersistentObjects() {
+        var objects = gameState.Get&lt;Dictionary&lt;string, DataContainer&gt;&gt;("persistentObjects");
+        if (objects == null) return;
+        
+        foreach (var pair in objects) {
+            string id = pair.Key;
+            var data = pair.Value;
+            
+            string prefabPath = data.Get&lt;string&gt;("prefabPath");
+            if (!string.IsNullOrEmpty(prefabPath)) {
+                // Load and instantiate prefab
+                GameObject prefab = Resources.Load&lt;GameObject&gt;(prefabPath);
+                if (prefab != null) {
+                    Vector3 position = data.Get&lt;Vector3&gt;("position");
+                    Quaternion rotation = data.Get&lt;Quaternion&gt;("rotation");
+                    Vector3 scale = data.Get&lt;Vector3&gt;("scale");
+                    
+                    GameObject instance = Instantiate(prefab, position, rotation);
+                    instance.transform.localScale = scale;
+                    
+                    // Update reference to point to new instance
+                    // Instead of storing direct references, we store object IDs
+                    // and rely on a registry system to find the actual objects
+                    SceneObjectTracker.RegisterObject(id, instance);
+                }
+            }
+        }
+    }
+    
+    void OnEnable() {
+        // Subscribe to scene load events
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+    
+    void OnDisable() {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+    
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode) {
+        // Restore persistent objects after scene is loaded
+        RestorePersistentObjects();
+    }
+}</code></pre>
+        </div>
+    </section>
+
+    <section id="best-practices">
+        <h2>Best Practices for Unity References</h2>
+        
+        <div class="concept-box">
+            <h3>Reference Validation</h3>
+            <p>Always validate Unity object references before use:</p>
+            <pre><code>// Get a GameObject reference with validation
+GameObject GetObjectSafely(DataContainer container, string key) {
+    GameObject obj = container.Get&lt;GameObject&gt;(key);
+    
+    // Check if reference is valid
+    if (obj == null) {
+        Debug.LogWarning($"Missing object reference for key: {key}");
+        return null;
+    }
+    
+    return obj;
+}
+
+// Get a component with validation
+T GetComponentSafely&lt;T&gt;(DataContainer container, string key) where T : Component {
+    GameObject obj = GetObjectSafely(container, key);
+    if (obj == null) return null;
+    
+    T component = obj.GetComponent&lt;T&gt;();
+    if (component == null) {
+        Debug.LogWarning($"Object {obj.name} doesn't have component {typeof(T).Name}");
+        return null;
+    }
+    
+    return component;
+}</code></pre>
+        </div>
+
+        <div class="concept-box">
+            <h3>Reference Organization</h3>
+            <p>Organize complex references with nested containers:</p>
+            <pre><code>// Organize references by system/category
+var gameData = new DataContainer();
+
+// UI references
+var uiReferences = gameData.GetOrCreateContainer("ui");
+uiReferences.Set("mainMenu", mainMenuCanvas);
+uiReferences.Set("hud", hudCanvas);
+uiReferences.Set("inventory", inventoryPanel);
+
+// Player references
+var playerReferences = gameData.GetOrCreateContainer("player");
+playerReferences.Set("character", playerGameObject);
+playerReferences.Set("camera", playerCamera);
+playerReferences.Set("controller", playerController);
+
+// Level references
+var levelReferences = gameData.GetOrCreateContainer("level");
+levelReferences.Set("spawnPoint", spawnPoint);
+levelReferences.Set("exitPoint", exitPoint);
+
+// Access via path notation
+GameObject hudCanvas = gameData.PathGet&lt;GameObject&gt;("ui.hud");
+Transform spawnPoint = gameData.PathGet&lt;Transform&gt;("level.spawnPoint");</code></pre>
+        </div>
+
+        <div class="concept-box">
+            <h3>Performance Considerations</h3>
+            <p>Be mindful of performance when working with Unity object references:</p>
+            <ul>
+                <li>Cache references to frequently accessed objects instead of retrieving them repeatedly</li>
+                <li>Use targeted containers rather than traversing deep hierarchies</li>
+                <li>Be aware that JSON serialization of Unity references can be more expensive than other data types</li>
+                <li>References to prefabs are more reliable across scenes than references to scene objects</li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="next-steps">
+        <h2>Next Steps</h2>
+        <div class="doc-grid">
+            <div class="doc-card">
+                <h3>Serialization</h3>
+                <p>Learn advanced serialization techniques for saving and loading data.</p>
+                <a href="advanced-serialization.html" class="doc-button">Serialization →</a>
+            </div>
+            <div class="doc-card">
+                <h3>Observer Pattern</h3>
+                <p>Implement reactive programming with observers for data changes.</p>
+                <a href="advanced-observer.html" class="doc-button">Observer Pattern →</a>
+            </div>
+            <div class="doc-card">
+                <h3>Template & Instance Pattern</h3>
+                <p>Master the template and instance pattern for game data.</p>
+                <a href="advanced-templates.html" class="doc-button">Templates →</a>
+            </div>
+        </div>
+    </section>
+
+    <a href="advanced.html" class="back-link">← Back to Advanced Topics</a>
+
+    <footer>
+        <p>GAOS DataStructure | <a href="index.html">Home</a> | <a href="https://www.linkedin.com/in/yugao-luckyvr">Yu Gao</a></p>
+    </footer>
+</body>
+</html> 
