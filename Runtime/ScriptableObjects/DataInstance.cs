@@ -9,7 +9,7 @@ namespace GAOS.DataStructure
     /// Instead of storing a full copy of the data container, it only stores overridden values.
     /// </summary>
     [CreateAssetMenu(fileName = "NewDataInstance", menuName = "GAOS/Data/Data Instance")]
-    public class DataInstance : ScriptableObject
+    public abstract class DataInstance : ScriptableObject
     {
         [SerializeField] private DataStructure _parentStructure;
         [SerializeField] private string _instanceId;

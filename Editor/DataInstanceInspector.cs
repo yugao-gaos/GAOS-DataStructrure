@@ -8,10 +8,11 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using GAOS.DataStructure;
 using GAOS.DataStructure.References;
+using GAOS.Logger;
 
 namespace GAOS.DataStructure.Editor
 {
-    [CustomEditor(typeof(DataInstance))]
+    [CustomEditor(typeof(DataInstance), true)]
     public class DataInstanceInspector : UnityEditor.Editor
     {
         // UI elements
@@ -362,8 +363,7 @@ namespace GAOS.DataStructure.Editor
                 }
             }
             
-            // Debug output to verify parent paths
-            Debug.Log($"Override paths including parents: {string.Join(", ", result)}");
+            GLog.Info<DataSystemEditorLogger>($"Override paths including parents: {string.Join(", ", result)}");
             
             return result;
         }
@@ -398,8 +398,7 @@ namespace GAOS.DataStructure.Editor
                 _expandedPaths.Add(path);
             }
             
-            // Debug info to help track state
-            Debug.Log($"Saved {currentExpandedPaths.Count} expanded paths. Total tracked: {_expandedPaths.Count}");
+            GLog.Info<DataSystemEditorLogger>($"Saved {currentExpandedPaths.Count} expanded paths. Total tracked: {_expandedPaths.Count}");
         }
         
         private void RestoreExpandedState()
@@ -443,8 +442,7 @@ namespace GAOS.DataStructure.Editor
                 }
             }
             
-            // Debug info to help track state
-            Debug.Log($"Restored {restoredCount} expanded items out of {_expandedPaths.Count} tracked paths");
+            GLog.Info<DataSystemEditorLogger>($"Restored {restoredCount} expanded items out of {_expandedPaths.Count} tracked paths");
         }
         
         private void EnsureParentsExpanded(VisualElement childItem)
@@ -964,7 +962,7 @@ namespace GAOS.DataStructure.Editor
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Error getting value at path '{path}': {ex.Message}");
+                GLog.Error<DataSystemEditorLogger>($"Error getting value at path '{path}': {ex.Message}");
             }
             
             // Also get the default value from parent structure
@@ -978,7 +976,7 @@ namespace GAOS.DataStructure.Editor
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError($"Error getting default value at path '{path}': {ex.Message}");
+                    GLog.Error<DataSystemEditorLogger>($"Error getting default value at path '{path}': {ex.Message}");
                 }
             }
             
@@ -1421,7 +1419,7 @@ namespace GAOS.DataStructure.Editor
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Error setting value at path '{path}': {ex.Message}");
+                GLog.Error<DataSystemEditorLogger>($"Error setting value at path '{path}': {ex.Message}");
             }
         }
         
@@ -1494,7 +1492,7 @@ namespace GAOS.DataStructure.Editor
                 var inspectorType = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.InspectorWindow");
                 if (inspectorType == null)
                 {
-                    Debug.LogWarning("InspectorWindow type not found.");
+                    GLog.Warning<DataSystemEditorLogger>("InspectorWindow type not found.");
                     return fallbackHeight;
                 }
 
@@ -1502,7 +1500,7 @@ namespace GAOS.DataStructure.Editor
                 var inspectors = Resources.FindObjectsOfTypeAll(inspectorType);
                 if (inspectors.Length == 0)
                 {
-                    Debug.LogWarning("No InspectorWindow instances found.");
+                    GLog.Warning<DataSystemEditorLogger>("No InspectorWindow instances found.");
                     return fallbackHeight;
                 }
 
@@ -1537,12 +1535,12 @@ namespace GAOS.DataStructure.Editor
                     }
                 }
                 
-                Debug.LogWarning("Could not find inspector window containing this editor.");
+                GLog.Warning<DataSystemEditorLogger>("Could not find inspector window containing this editor.");
                 return fallbackHeight;
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"Failed to get inspector height via reflection: {ex.Message}");
+                GLog.Warning<DataSystemEditorLogger>($"Failed to get inspector height via reflection: {ex.Message}");
                 float fallbackHeight = 800f;
                 return fallbackHeight;
             }

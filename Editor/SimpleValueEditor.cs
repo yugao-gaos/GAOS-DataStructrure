@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 using UnityEditor;
+using GAOS.Logger;
+using GAOS.DataStructure.Editor;
 
 namespace GAOS.DataStructure.Editor
 {
@@ -180,7 +182,7 @@ namespace GAOS.DataStructure.Editor
             }
             
             // Should never reach here due to CanHandleType check
-            Debug.LogError($"SimpleValueEditor cannot handle type {type.Name}");
+            GLog.Error<DataSystemEditorLogger>($"SimpleValueEditor cannot handle type {type.Name}");
             return new Label($"Unsupported type: {type.Name}");
         }
     }

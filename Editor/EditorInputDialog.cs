@@ -1,6 +1,8 @@
 using System;
 using UnityEngine;
 using UnityEditor;
+using GAOS.Logger;
+using GAOS.DataStructure.Editor;
 
 namespace GAOS.DataStructure.Editor
 {

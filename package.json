@@ -1,6 +1,6 @@
 {
   "name": "com.gaos.datastructure",
-  "version": "0.9.0",
+  "version": "1.0.0",
   "displayName": "GAOS Data Structure",
   "description": "A package for creating, managing, and serializing hierarchical data containers",
   "unity": "2019.4",
@@ -10,7 +10,8 @@
     "url": "https://github.com/gaos"
   },
   "dependencies": {
-    "com.gaos.servicelocator": "1.0.0"
+    "com.gaos.servicelocator": "1.0.0",
+    "com.gaos.logger": "0.1.0"
   },
   "keywords": [
     "data",

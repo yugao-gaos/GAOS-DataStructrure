@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using GAOS.DataStructure;
 using GAOS.DataStructure.References;
+using GAOS.Logger;
 
 namespace GAOS.DataStructure.Editor
 {
@@ -85,12 +86,12 @@ namespace GAOS.DataStructure.Editor
                     if (contentElement.style.display == DisplayStyle.Flex)
                     {
                         _expandedItems.Add(path);
-                        Debug.Log($"Saving expanded state for: {path}");
+                        GLog.Info<DataSystemEditorLogger>($"Saving expanded state for: {path}");
                     }
                 }
             }
             
-            Debug.Log($"Saved {_expandedItems.Count} expanded items");
+            GLog.Info<DataSystemEditorLogger>($"Saved {_expandedItems.Count} expanded items");
         }
         
         /// <summary>
@@ -109,11 +110,11 @@ namespace GAOS.DataStructure.Editor
                 if (_treeItems.ContainsKey(path))
                 {
                     SetItemExpanded(_treeItems[path], true);
-                    Debug.Log($"Restored expanded state for: {path}");
+                    GLog.Info<DataSystemEditorLogger>($"Restored expanded state for: {path}");
                 }
             }
             
-            Debug.Log($"Restored expanded states for {_expandedItems.Count} items");
+            GLog.Info<DataSystemEditorLogger>($"Restored expanded states for {_expandedItems.Count} items");
         }
         
         /// <summary>
@@ -180,7 +181,7 @@ namespace GAOS.DataStructure.Editor
                 // If the path contains brackets, ensure they are processed correctly
                 if (path.Contains("["))
                 {
-                    Debug.Log($"Tree item clicked with path: {path}");
+                    GLog.Info<DataSystemEditorLogger>($"Tree item clicked with path: {path}");
                     
                     // Get the last part of the path for display in the property details
                     string displayKey = string.IsNullOrEmpty(path) ? "Root" : DataContainer.GetPathKey(path);
@@ -331,7 +332,7 @@ namespace GAOS.DataStructure.Editor
                 // Be consistent with the CreateCustomTreeItem click handler
                 if (path.Contains("["))
                 {
-                    Debug.Log($"Basic tree item clicked with path: {path}");
+                    GLog.Info<DataSystemEditorLogger>($"Basic tree item clicked with path: {path}");
                     
                     // Get the last part of the path for display in the property details
                     string displayKey = string.IsNullOrEmpty(path) ? "Root" : DataContainer.GetPathKey(path); 
@@ -365,7 +366,7 @@ namespace GAOS.DataStructure.Editor
                 if (!string.IsNullOrEmpty(currentPath) && !currentPath.EndsWith("]"))
                 {
                     string fullPath = currentPath + path;
-                    Debug.Log($"HighlightItem: Converted bracket-only path '{path}' to full path '{fullPath}'");
+                    GLog.Info<DataSystemEditorLogger>($"HighlightItem: Converted bracket-only path '{path}' to full path '{fullPath}'");
                     
                     // Update the path for highlighting if it exists in the tree
                     if (_treeItems.ContainsKey(fullPath))
@@ -396,7 +397,7 @@ namespace GAOS.DataStructure.Editor
             else
             {
                 _highlightedPath = null;
-                Debug.LogWarning($"HighlightItem: Could not find path '{path}' in tree items");
+                GLog.Warning<DataSystemEditorLogger>($"HighlightItem: Could not find path '{path}' in tree items");
             }
         }
         
@@ -408,7 +409,7 @@ namespace GAOS.DataStructure.Editor
             if (string.IsNullOrEmpty(path))
                 return;
             
-            Debug.Log($"ExpandToPath: Expanding to path: {path}");
+            GLog.Info<DataSystemEditorLogger>($"ExpandToPath: Expanding to path: {path}");
             
             // Special case: if the path is just a list index or dictionary key without a parent path
             if (path.StartsWith("["))
@@ -422,7 +423,7 @@ namespace GAOS.DataStructure.Editor
                 {
                     // Current path is the parent path, combine with the index/key
                     string fullPath = currentPath + path;
-                    Debug.Log($"ExpandToPath: Converted bracket-only path to full path: {fullPath}");
+                    GLog.Info<DataSystemEditorLogger>($"ExpandToPath: Converted bracket-only path to full path: {fullPath}");
                     
                     // Now expand using the full path
                     ExpandToPath(fullPath);
@@ -430,7 +431,7 @@ namespace GAOS.DataStructure.Editor
                 }
                 else
                 {
-                    Debug.LogWarning($"ExpandToPath: Cannot expand path starting with brackets without parent path: {path}");
+                    GLog.Warning<DataSystemEditorLogger>($"ExpandToPath: Cannot expand path starting with brackets without parent path: {path}");
                     return;
                 }
             }
@@ -442,7 +443,7 @@ namespace GAOS.DataStructure.Editor
                 int bracketIndex = path.IndexOf('[');
                 string parentPath = path.Substring(0, bracketIndex);
                 
-                Debug.Log($"ExpandToPath: For bracketed path, first expand parent: {parentPath}");
+                GLog.Info<DataSystemEditorLogger>($"ExpandToPath: For bracketed path, first expand parent: {parentPath}");
                 
                 // First, expand the parent container if it's a nested path
                 if (parentPath.Contains("."))
@@ -463,7 +464,7 @@ namespace GAOS.DataStructure.Editor
                             var item = _treeItems[currentPath];
                             SetItemExpanded(item, true);
                             _expandedItems.Add(currentPath);
-                            Debug.Log($"ExpandToPath: Expanded parent item: {currentPath}");
+                            GLog.Info<DataSystemEditorLogger>($"ExpandToPath: Expanded parent item: {currentPath}");
                         }
                     }
                 }
@@ -474,7 +475,7 @@ namespace GAOS.DataStructure.Editor
                     var item = _treeItems[parentPath];
                     SetItemExpanded(item, true);
                     _expandedItems.Add(parentPath);
-                    Debug.Log($"ExpandToPath: Expanded container item: {parentPath}");
+                    GLog.Info<DataSystemEditorLogger>($"ExpandToPath: Expanded container item: {parentPath}");
                 }
                 
                 // Finally, if the full path exists in tree items, expand it too if it's a container
@@ -487,12 +488,12 @@ namespace GAOS.DataStructure.Editor
                     {
                         SetItemExpanded(item, true);
                         _expandedItems.Add(path);
-                        Debug.Log($"ExpandToPath: Expanded full path item: {path}");
+                        GLog.Info<DataSystemEditorLogger>($"ExpandToPath: Expanded full path item: {path}");
                     }
                 }
                 else
                 {
-                    Debug.LogWarning($"ExpandToPath: Full path not found in tree items: {path}");
+                    GLog.Warning<DataSystemEditorLogger>($"ExpandToPath: Full path not found in tree items: {path}");
                 }
             }
             else
@@ -514,11 +515,11 @@ namespace GAOS.DataStructure.Editor
                         SetItemExpanded(item, true);
                         // Add to expanded items set
                         _expandedItems.Add(currentPath);
-                        Debug.Log($"ExpandToPath: Expanded item: {currentPath}");
+                        GLog.Info<DataSystemEditorLogger>($"ExpandToPath: Expanded item: {currentPath}");
                     }
                     else
                     {
-                        Debug.LogWarning($"ExpandToPath: Path not found in tree items: {currentPath}");
+                        GLog.Warning<DataSystemEditorLogger>($"ExpandToPath: Path not found in tree items: {currentPath}");
                     }
                 }
             }

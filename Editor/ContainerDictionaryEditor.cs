@@ -6,6 +6,7 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using GAOS.DataStructure;
+using GAOS.Logger;
 
 namespace GAOS.DataStructure.Editor
 {
@@ -31,7 +32,7 @@ namespace GAOS.DataStructure.Editor
         {
             if (type != typeof(OrderedDictionary<string, DataContainer>))
             {
-                Debug.LogError($"ContainerDictionaryEditor cannot handle type {type.Name}");
+                GLog.Error<DataSystemEditorLogger>($"ContainerDictionaryEditor cannot handle type {type.Name}");
                 return new Label($"Unsupported type: {type.Name}");
             }
 
@@ -59,7 +60,7 @@ namespace GAOS.DataStructure.Editor
         {
             // DEBUG: Log the current path we're editing
             string currentPath = _editorWindow?.CurrentPath;
-            Debug.Log($"Creating dictionary editor for path: {currentPath}, Dictionary items: {dictionary.Count}");
+            GLog.Info<DataSystemEditorLogger>($"Creating dictionary editor for path: {currentPath}, Dictionary items: {dictionary.Count}");
             
             // Create table header using base class method
             var tableHeader = CreateTableHeader(true, 
@@ -160,12 +161,12 @@ namespace GAOS.DataStructure.Editor
                     if (!string.IsNullOrEmpty(path))
                     {
                         // Log the current path when editing an item for debugging
-                        Debug.Log($"Editing dictionary item: Current Path='{path}', Key='{key}'");
+                        GLog.Info<DataSystemEditorLogger>($"Editing dictionary item: Current Path='{path}', Key='{key}'");
                         
                         // Use the proper DataContainer utility method for dictionary paths
                         string itemPath = DataContainer.CombineDictionaryItemPath(path, key);
                         
-                        Debug.Log($"ContainerDictionaryEditor: Selecting dictionary item at full path: {itemPath}");
+                        GLog.Info<DataSystemEditorLogger>($"ContainerDictionaryEditor: Selecting dictionary item at full path: {itemPath}");
                         _editorWindow.SelectPropertyInternal(itemPath, key, typeof(DataContainer));
                     }
                 }
@@ -232,7 +233,7 @@ namespace GAOS.DataStructure.Editor
         {
             // Debug the current path to see where we're adding items
             string currentPath = _editorWindow?.CurrentPath;
-            Debug.Log($"Adding dictionary item to path: '{currentPath}', Dictionary items: {dictionary.Count}");
+            GLog.Info<DataSystemEditorLogger>($"Adding dictionary item to path: '{currentPath}', Dictionary items: {dictionary.Count}");
             
             string key = keyField.value;
             

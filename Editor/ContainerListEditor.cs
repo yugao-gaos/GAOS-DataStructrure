@@ -6,6 +6,7 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using GAOS.DataStructure;
+using GAOS.Logger;
 
 namespace GAOS.DataStructure.Editor
 {
@@ -31,7 +32,7 @@ namespace GAOS.DataStructure.Editor
         {
             if (type != typeof(List<DataContainer>))
             {
-                Debug.LogError($"ContainerListEditor cannot handle type {type.Name}");
+                GLog.Error<DataSystemEditorLogger>($"ContainerListEditor cannot handle type {type.Name}");
                 return new Label($"Unsupported type: {type.Name}");
             }
 
@@ -152,7 +153,7 @@ namespace GAOS.DataStructure.Editor
                     {
                         // Generate full path using DataContainer's list item path helper
                         string itemPath = DataContainer.CombineListItemPath(path, index);
-                        Debug.Log($"ContainerListEditor: Selecting list item at full path: {itemPath}");
+                        GLog.Info<DataSystemEditorLogger>($"ContainerListEditor: Selecting list item at full path: {itemPath}");
                         _editorWindow.SelectPropertyInternal(itemPath, $"Item {index}", typeof(DataContainer));
                     }
                 }

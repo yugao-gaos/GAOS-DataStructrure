@@ -6,6 +6,8 @@ using UnityEditor;
 using UnityEngine;
 using GAOS.DataStructure.References;
 using GAOS.ServiceLocator;
+using GAOS.Logger;
+using GAOS.DataStructure.Editor;
 
 namespace GAOS.DataStructure.Editor
 {
@@ -42,7 +44,7 @@ namespace GAOS.DataStructure.Editor
         
         private static void ScheduleInitialization()
         {
-            Debug.Log("Scheduling UnityReferenceRegistry initialization");
+            GLog.Info<DataSystemEditorLogger>("Scheduling UnityReferenceRegistry initialization");
             EditorApplication.update += TryInitialize;
         }
         
@@ -63,13 +65,13 @@ namespace GAOS.DataStructure.Editor
                 // Log every other attempt to avoid spamming the console
                 if (_retryCount % 2 == 0)
                 {
-                    Debug.Log($"Waiting for ServiceLocator TypeCache to be ready... (Attempt {_retryCount}/{MaxRetries})");
+                    GLog.Info<DataSystemEditorLogger>($"Waiting for ServiceLocator TypeCache to be ready... (Attempt {_retryCount}/{MaxRetries})");
                 }
                 
                 // If we've tried too many times, proceed anyway
                 if (_retryCount >= MaxRetries)
                 {
-                    Debug.LogWarning("ServiceLocator TypeCache might not be fully initialized, proceeding anyway");
+                    GLog.Warning<DataSystemEditorLogger>("ServiceLocator TypeCache might not be fully initialized, proceeding anyway");
                     EnsureRegistryExists();
                     _isInitialized = true;
                     EditorApplication.update -= TryInitialize;
@@ -122,21 +124,21 @@ namespace GAOS.DataStructure.Editor
             }
             catch (System.Exception ex)
             {
-                Debug.LogError($"Error checking TypeCache status: {ex.Message}");
+                GLog.Error<DataSystemEditorLogger>($"Error checking TypeCache status: {ex.Message}");
                 return false;
             }
         }
         
         private static void EnsureRegistryExists()
         {
-            Debug.Log("Ensuring UnityReferenceRegistry exists");
+            GLog.Info<DataSystemEditorLogger>("Ensuring UnityReferenceRegistry exists");
             
             // Check if the registry asset already exists
             var registry = AssetDatabase.LoadAssetAtPath<UnityReferenceRegistry>(RegistryPath);
             
             if (registry == null)
             {
-                Debug.Log("Creating UnityReferenceRegistry asset");
+                GLog.Info<DataSystemEditorLogger>("Creating UnityReferenceRegistry asset");
                 
                 // Make sure the Resources folder exists
                 if (!Directory.Exists(ResourcesFolder))
@@ -150,7 +152,7 @@ namespace GAOS.DataStructure.Editor
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
                 
-                Debug.Log("UnityReferenceRegistry asset created at: " + RegistryPath);
+                GLog.Info<DataSystemEditorLogger>("UnityReferenceRegistry asset created at: " + RegistryPath);
             }
             
             // Register the service manually
@@ -162,7 +164,7 @@ namespace GAOS.DataStructure.Editor
             // First check if service is already registered
             if (IsServiceRegistered())
             {
-                Debug.Log("UnityReferenceRegistry service is already registered");
+                GLog.Info<DataSystemEditorLogger>("UnityReferenceRegistry service is already registered");
                 return;
             }
             
@@ -187,16 +189,16 @@ namespace GAOS.DataStructure.Editor
                         ServiceContext.RuntimeAndEditor
                     });
                     
-                    Debug.Log("Manually registered UnityReferenceRegistry service");
+                    GLog.Info<DataSystemEditorLogger>("Manually registered UnityReferenceRegistry service");
                 }
                 catch (System.Exception ex)
                 {
-                    Debug.LogError($"Failed to register UnityReferenceRegistry service: {ex.Message}");
+                    GLog.Error<DataSystemEditorLogger>($"Failed to register UnityReferenceRegistry service: {ex.Message}");
                 }
             }
             else
             {
-                Debug.LogError("Could not find Register method via reflection");
+                GLog.Error<DataSystemEditorLogger>("Could not find Register method via reflection");
             }
         }
         

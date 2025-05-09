@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using UnityEngine;
 using GAOS.DataStructure.Interfaces;
 using GAOS.DataStructure.References;
+using GAOS.Logger;
 
 namespace GAOS.DataStructure
 {
@@ -80,7 +81,7 @@ namespace GAOS.DataStructure
                     return typedValue;
                 }
                 
-                Debug.LogWarning($"Value for key '{key}' is not of type {typeof(T).Name}, but {value.GetType().Name}. Returning default value.");
+                GLog.Warning<DataSystemLogger>($"Value for key '{key}' is not of type {typeof(T).Name}, but {value.GetType().Name}. Returning default value.");
             }
 
             return defaultValue;
@@ -927,7 +928,7 @@ namespace GAOS.DataStructure
                     var type = Type.GetType(typeString);
                     if (type == null)
                     {
-                        Debug.LogWarning($"Could not find type {typeString} for key {key}. Skipping.");
+                        GLog.Warning<DataSystemLogger>($"Could not find type {typeString} for key {key}. Skipping.");
                         continue;
                     }
                     
@@ -953,7 +954,7 @@ namespace GAOS.DataStructure
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Error deserializing container: {ex.Message}");
+                GLog.Error<DataSystemLogger>($"Error deserializing container: {ex.Message}");
             }
         }
 

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using GAOS.Logger;
 
 namespace GAOS.DataStructure
 {
@@ -15,6 +16,8 @@ namespace GAOS.DataStructure
         [SerializeField] private DataContainer _container = new DataContainer();
         [SerializeField] private string _structureId;
         [SerializeField] private string _description;
+        [SerializeField] private List<string> _interfacePropertyPaths = new List<string>();
+        [SerializeField] private string _generatedInstanceTypeFullName;
         
         /// <summary>
         /// The unique identifier for this structure.
@@ -31,6 +34,13 @@ namespace GAOS.DataStructure
         /// </summary>
         public DataContainer Container => _container;
 
+        public List<string> InterfacePropertyPaths => _interfacePropertyPaths;
+
+        /// <summary>
+        /// The generated DataInstance type's full name.
+        /// </summary>
+        public string GeneratedInstanceTypeFullName => _generatedInstanceTypeFullName;
+
         /// <summary>
         /// Creates a new DataInstance from this structure.
         /// </summary>
@@ -38,7 +48,15 @@ namespace GAOS.DataStructure
         /// <returns>A new DataInstance with this structure as parent.</returns>
         public DataInstance CreateInstance(string instanceName = null)
         {
-            var instance = CreateInstance<DataInstance>();
+            var typeName = _generatedInstanceTypeFullName;
+            if (string.IsNullOrEmpty(typeName))
+                throw new InvalidOperationException("No generated DataInstance type is set for this DataStructure.");
+
+            var type = Type.GetType(typeName);
+            if (type == null)
+                throw new InvalidOperationException($"Could not resolve type: {typeName}");
+
+            var instance = (DataInstance)ScriptableObject.CreateInstance(type);
             // Create a temporary container to convert to overrides
             var tempContainer = (DataContainer)_container.DeepCopy();
             instance.Initialize(this, tempContainer);
@@ -102,7 +120,7 @@ namespace GAOS.DataStructure
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Error deserializing DataStructure: {ex.Message}");
+                GLog.Error<DataSystemLogger>($"Error deserializing DataStructure: {ex.Message}");
             }
         }
         
@@ -123,7 +141,7 @@ namespace GAOS.DataStructure
         #if UNITY_EDITOR
         public DataInstance CreatePersistentInstance(string path, string instanceName = null)
         {
-            var instance = CreateInstance();
+            var instance = CreateInstance(instanceName);
             instanceName = instanceName ?? $"{name}Instance";
             UnityEditor.AssetDatabase.CreateAsset(instance, $"{path}/{instanceName}.asset");
             UnityEditor.AssetDatabase.SaveAssets();
@@ -253,5 +271,7 @@ namespace GAOS.DataStructure
                 }
             }
         }
+
+        public void SetGeneratedInstanceTypeFullName(string typeName) => _generatedInstanceTypeFullName = typeName;
     }
 } 

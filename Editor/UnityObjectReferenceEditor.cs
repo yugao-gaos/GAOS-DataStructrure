@@ -4,6 +4,8 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using GAOS.DataStructure.References;
+using GAOS.Logger;
+using GAOS.DataStructure.Editor;
 
 namespace GAOS.DataStructure.Editor
 {
@@ -27,7 +29,7 @@ namespace GAOS.DataStructure.Editor
         {
             if (type != typeof(UnityObjectReference))
             {
-                Debug.LogError($"UnityObjectReferenceEditor cannot handle type {type.Name}");
+                GLog.Error<DataSystemEditorLogger>($"UnityObjectReferenceEditor cannot handle type {type.Name}");
                 return new Label($"Unsupported type: {type.Name}");
             }
 
@@ -153,12 +155,12 @@ namespace GAOS.DataStructure.Editor
             {
                 var newObject = evt.newValue as UnityEngine.Object;
                 
-                Debug.Log($"Object field changed: {(evt.previousValue != null ? evt.previousValue.name : "null")} -> {(newObject != null ? newObject.name : "null")}");
+                GLog.Info<DataSystemEditorLogger>($"Object field changed: {(evt.previousValue != null ? evt.previousValue.name : "null")} -> {(newObject != null ? newObject.name : "null")}");
                 
                 // Special handling for null (deletion)
                 if (newObject == null && evt.previousValue != null)
                 {
-                    Debug.Log("Object was explicitly set to null - this is a deletion operation");
+                    GLog.Info<DataSystemEditorLogger>("Object was explicitly set to null - this is a deletion operation");
                     
                     // If object was set to null, we need to ensure it stays null
                     objectField.SetValueWithoutNotify(null);
@@ -224,7 +226,7 @@ namespace GAOS.DataStructure.Editor
                     var obj = objectField.value;
                     
                     // Debug output to check values
-                    Debug.Log($"Updating UnityObjectReference: StorageType={storageType}, Key={key}, Object={(obj != null ? obj.name : "null")}");
+                    GLog.Info<DataSystemEditorLogger>($"Updating UnityObjectReference: StorageType={storageType}, Key={key}, Object={(obj != null ? obj.name : "null")}");
                     
                     // Make sure we have a key
                     if (string.IsNullOrEmpty(key))
@@ -253,7 +255,7 @@ namespace GAOS.DataStructure.Editor
                         // No object - check if this is an intentional null (deletion) or initial setup
                         if (objRef != null && objectField.value == null)
                         {
-                            Debug.Log("Reference was set to null - creating a default reference with null object");
+                            GLog.Info<DataSystemEditorLogger>("Reference was set to null - creating a default reference with null object");
                             
                             // Get the existing type if available
                             Type objectType = typeof(UnityEngine.Object);
@@ -296,12 +298,12 @@ namespace GAOS.DataStructure.Editor
                     {
                         EditorUtility.SetDirty(activeObject);
                         AssetDatabase.SaveAssetIfDirty(activeObject);
-                        Debug.Log($"Marked asset dirty and saved: {activeObject.name}");
+                        GLog.Info<DataSystemEditorLogger>($"Marked asset dirty and saved: {activeObject.name}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError($"Error updating Unity Object Reference: {ex.Message}");
+                    GLog.Error<DataSystemEditorLogger>($"Error updating Unity Object Reference: {ex.Message}");
                 }
             }
             

@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using GAOS.DataStructure;
 using GAOS.DataStructure.References;
+using GAOS.Logger;
 
 namespace GAOS.DataStructure.Editor
 {
@@ -118,7 +119,7 @@ namespace GAOS.DataStructure.Editor
 
         private void LoadDataStructure(DataStructure dataStructure)
         {
-            Debug.Log($"Loading data structure: {dataStructure.name}");
+            GLog.Info<DataSystemEditorLogger>($"Loading data structure: {dataStructure.name}");
             
             _currentDataStructure = dataStructure;
             _currentPath = "";
@@ -126,7 +127,7 @@ namespace GAOS.DataStructure.Editor
             // Make sure DataStructure is valid
             if (_currentDataStructure.Container == null)
             {
-                Debug.LogError("DataStructure container is null!");
+                GLog.Error<DataSystemEditorLogger>("DataStructure container is null!");
                 _detailsContent.Clear();
                 var errorLabel = new Label("Error: Data structure container is null!");
                 errorLabel.style.color = new Color(1, 0, 0);
@@ -136,11 +137,11 @@ namespace GAOS.DataStructure.Editor
             
             // Debug keys in root container
             int keyCount = _currentDataStructure.Container.GetKeys().Count();
-            Debug.Log($"DataStructure root container has {keyCount} keys");
+            GLog.Info<DataSystemEditorLogger>($"DataStructure root container has {keyCount} keys");
             foreach (var key in _currentDataStructure.Container.GetKeys())
             {
                 Type valueType = _currentDataStructure.Container.GetValueType(key);
-                Debug.Log($"Root key: {key}, Type: {valueType?.Name}");
+                GLog.Info<DataSystemEditorLogger>($"Root key: {key}, Type: {valueType?.Name}");
             }
             
             // Initialize tree builder with current data structure
@@ -156,7 +157,7 @@ namespace GAOS.DataStructure.Editor
             // Ensure the default message is hidden as we're showing the root container
             _defaultMessageLabel.style.display = DisplayStyle.None;
             
-            Debug.Log("DataStructure loaded successfully, root container selected");
+            GLog.Info<DataSystemEditorLogger>("DataStructure loaded successfully, root container selected");
         }
 
         /// <summary>
@@ -178,12 +179,12 @@ namespace GAOS.DataStructure.Editor
             if (string.IsNullOrEmpty(_currentPath))
             {
                 SelectProperty("", "Root", typeof(DataContainer));
-                Debug.Log("RefreshHierarchyTree: Selected root as default after refresh");
+                GLog.Info<DataSystemEditorLogger>("RefreshHierarchyTree: Selected root as default after refresh");
             }
             else
             {
                 EnsureSelection(_currentPath);
-                Debug.Log($"RefreshHierarchyTree: Restored selection to '{_currentPath}' after refresh");
+                GLog.Info<DataSystemEditorLogger>($"RefreshHierarchyTree: Restored selection to '{_currentPath}' after refresh");
             }
         }
 
@@ -195,7 +196,7 @@ namespace GAOS.DataStructure.Editor
             // Special case for index-only paths
             if (!string.IsNullOrEmpty(path) && path.StartsWith("[") && !_currentPath.EndsWith("]"))
             {
-                Debug.Log($"SelectProperty: Converting index-only path '{path}' by appending to current path '{_currentPath}'");
+                GLog.Info<DataSystemEditorLogger>($"SelectProperty: Converting index-only path '{path}' by appending to current path '{_currentPath}'");
                 // Only append if we have a current path and it makes sense
                 if (!string.IsNullOrEmpty(_currentPath) && 
                     (_currentPath.EndsWith("list") || 
@@ -203,7 +204,7 @@ namespace GAOS.DataStructure.Editor
                      type == typeof(List<DataContainer>)))
                 {
                     path = _currentPath + path;
-                    Debug.Log($"SelectProperty: Converted to full path: {path}");
+                    GLog.Info<DataSystemEditorLogger>($"SelectProperty: Converted to full path: {path}");
                 }
             }
             
@@ -218,7 +219,7 @@ namespace GAOS.DataStructure.Editor
             }
             
             // Debug info
-            Debug.Log($"Selected property: Path={path}, Key={key}, Type={type?.Name}");
+            GLog.Info<DataSystemEditorLogger>($"Selected property: Path={path}, Key={key}, Type={type?.Name}");
             
             // For dictionary items with bracket notation, add extra debugging
             if (path.Contains("[") && path.Contains("]") && type == typeof(DataContainer))
@@ -226,16 +227,16 @@ namespace GAOS.DataStructure.Editor
                 DataContainer container = GetContainerAtPath(path);
                 if (container != null)
                 {
-                    Debug.Log($"SelectProperty: Successfully got container at path '{path}' with {container.GetKeys().Count()} keys");
+                    GLog.Info<DataSystemEditorLogger>($"SelectProperty: Successfully got container at path '{path}' with {container.GetKeys().Count()} keys");
                     foreach (var containerKey in container.GetKeys())
                     {
                         Type keyType = container.GetValueType(containerKey);
-                        Debug.Log($"SelectProperty: Container has key '{containerKey}' of type {keyType?.Name}");
+                        GLog.Info<DataSystemEditorLogger>($"SelectProperty: Container has key '{containerKey}' of type {keyType?.Name}");
                     }
                 }
                 else
                 {
-                    Debug.LogError($"SelectProperty: Failed to get container at path '{path}'");
+                    GLog.Error<DataSystemEditorLogger>($"SelectProperty: Failed to get container at path '{path}'");
                 }
             }
             
@@ -245,14 +246,14 @@ namespace GAOS.DataStructure.Editor
 
         private void ShowPropertyDetails(string path, string key, Type type)
         {
-            Debug.Log($"ShowPropertyDetails: path='{path}', key='{key}', type={type?.Name}");
+            GLog.Info<DataSystemEditorLogger>($"ShowPropertyDetails: path='{path}', key='{key}', type={type?.Name}");
             _detailsContent.Clear();
 
             // Special case for dictionary items with bracket notation
             bool isDictionaryItem = path.Contains("[") && path.EndsWith("]") && type == typeof(DataContainer);
             if (isDictionaryItem)
             {
-                Debug.Log($"ShowPropertyDetails: Handling dictionary item at path '{path}'");
+                GLog.Info<DataSystemEditorLogger>($"ShowPropertyDetails: Handling dictionary item at path '{path}'");
                 
                 // Check if we have a valid data structure with a container
                 if (_currentDataStructure != null)
@@ -286,7 +287,7 @@ namespace GAOS.DataStructure.Editor
                     
                     if (dictionaryItemContainer != null)
                     {
-                        Debug.Log($"ShowPropertyDetails: Successfully got container with {dictionaryItemContainer.GetKeys().Count()} keys");
+                        GLog.Info<DataSystemEditorLogger>($"ShowPropertyDetails: Successfully got container with {dictionaryItemContainer.GetKeys().Count()} keys");
                         
                         // Use the container editor to edit this container
                         if (_containerEditor != null && _containerEditor.CanHandleType(typeof(DataContainer)))
@@ -298,13 +299,13 @@ namespace GAOS.DataStructure.Editor
                                 // Mark dirty and refresh hierarchy
                                 ApplyStructuralChange();
                                 
-                                Debug.Log($"Dictionary item container at '{path}' updated");
+                                GLog.Info<DataSystemEditorLogger>($"Dictionary item container at '{path}' updated");
                             }));
                         }
                     }
                     else
                     {
-                        Debug.LogError($"ShowPropertyDetails: Failed to get container at path '{path}'");
+                        GLog.Error<DataSystemEditorLogger>($"ShowPropertyDetails: Failed to get container at path '{path}'");
                         containerEditorElement.Add(new Label("Error: Could not load container contents."));
                     }
                     
@@ -352,7 +353,7 @@ namespace GAOS.DataStructure.Editor
                         // This ensures we edit the real container and not an orphaned copy
                         var rootContainer = _currentDataStructure.Container;
                         
-                        Debug.Log("Using ContainerEditor to edit root container with " + rootContainer.GetKeys().Count() + " keys");
+                        GLog.Info<DataSystemEditorLogger>("Using ContainerEditor to edit root container with " + rootContainer.GetKeys().Count() + " keys");
                         
                         rootEditorContainer.Add(_containerEditor.CreateEditorField(typeof(DataContainer), rootContainer, newValue => {
                             // Root container updates are handled directly by the ContainerEditor
@@ -362,8 +363,7 @@ namespace GAOS.DataStructure.Editor
                             // Just mark the asset as dirty to ensure changes are saved
                             ApplyStructuralChange();
                             
-                            // Log a confirmation that we received the update
-                            Debug.Log("Root container updated via ContainerEditor");
+                            GLog.Info<DataSystemEditorLogger>("Root container updated via ContainerEditor");
                         }));
                     }
                     
@@ -437,7 +437,7 @@ namespace GAOS.DataStructure.Editor
             // Final fallback to a basic value editor
             if (!editorFound && type != null)
             {
-                Debug.LogError($"Error creating editor for {path}");
+                GLog.Error<DataSystemEditorLogger>($"Error creating editor for {path}");
             }
             
             // Add access code display
@@ -462,7 +462,7 @@ namespace GAOS.DataStructure.Editor
             // Then refresh the hierarchy tree to show changes
             RefreshHierarchyTree();
             
-            Debug.Log("Applied structural change: Marked asset dirty and refreshed hierarchy tree");
+            GLog.Info<DataSystemEditorLogger>("Applied structural change: Marked asset dirty and refreshed hierarchy tree");
         }
         
         private void CreateCodeAccessSection(VisualElement container, string path, Type type)
@@ -664,23 +664,23 @@ namespace GAOS.DataStructure.Editor
 
         private DataContainer GetContainerAtPath(string path)
         {
-            Debug.Log($"GetContainerAtPath: Resolving path '{path}'");
+            GLog.Info<DataSystemEditorLogger>($"GetContainerAtPath: Resolving path '{path}'");
             
             if (_currentDataStructure == null)
             {
-                Debug.LogError("GetContainerAtPath: _currentDataStructure is null");
+                GLog.Error<DataSystemEditorLogger>("GetContainerAtPath: _currentDataStructure is null");
                 return null;
             }
         
             if (_currentDataStructure.Container == null)
             {
-                Debug.LogError("GetContainerAtPath: _currentDataStructure.Container is null");
+                GLog.Error<DataSystemEditorLogger>("GetContainerAtPath: _currentDataStructure.Container is null");
                 return null;
             }
         
             if (string.IsNullOrEmpty(path))
             {
-                Debug.Log("GetContainerAtPath: Empty path, returning root container");
+                GLog.Info<DataSystemEditorLogger>("GetContainerAtPath: Empty path, returning root container");
                 return _currentDataStructure.Container;
             }
             
@@ -692,11 +692,11 @@ namespace GAOS.DataStructure.Editor
         {
             try
             {
-                Debug.Log($"GetPathValue called with path='{path}', type={type?.Name}");
+                GLog.Info<DataSystemEditorLogger>($"GetPathValue called with path='{path}', type={type?.Name}");
                 
                 if (_currentDataStructure == null || _currentDataStructure.Container == null)
                 {
-                    Debug.LogWarning($"GetPathValue: Missing data - DataStructure: {_currentDataStructure != null}, Container: {_currentDataStructure?.Container != null}, Path: '{path}'");
+                    GLog.Warning<DataSystemEditorLogger>($"GetPathValue: Missing data - DataStructure: {_currentDataStructure != null}, Container: {_currentDataStructure?.Container != null}, Path: '{path}'");
                         return null;
                     }
                     
@@ -711,7 +711,7 @@ namespace GAOS.DataStructure.Editor
                     var dictionary = _currentDataStructure.Container.PathGet<OrderedDictionary<string, DataContainer>>(parentPath);
                     if (dictionary == null || !dictionary.ContainsKey(dictionaryKey))
                         {
-                        Debug.LogWarning($"GetPathValue: Dictionary not found or key not in dictionary. Path: {path}, Parent: {parentPath}, Key: {dictionaryKey}");
+                        GLog.Warning<DataSystemEditorLogger>($"GetPathValue: Dictionary not found or key not in dictionary. Path: {path}, Parent: {parentPath}, Key: {dictionaryKey}");
                         return null;
                     }
                     
@@ -725,7 +725,7 @@ namespace GAOS.DataStructure.Editor
                     string indexStr = DataContainer.GetPathKey(path);
                     if (!int.TryParse(indexStr, out int index))
                         {
-                        Debug.LogError($"GetPathValue: Invalid list index: {indexStr}");
+                        GLog.Error<DataSystemEditorLogger>($"GetPathValue: Invalid list index: {indexStr}");
             return null;
         }
 
@@ -733,7 +733,7 @@ namespace GAOS.DataStructure.Editor
                     var list = _currentDataStructure.Container.PathGet<List<DataContainer>>(parentPath);
                             if (list == null || index < 0 || index >= list.Count)
                     {
-                        Debug.LogWarning($"GetPathValue: List not found or index out of range. Path: {path}, Parent: {parentPath}, Index: {index}");
+                        GLog.Warning<DataSystemEditorLogger>($"GetPathValue: List not found or index out of range. Path: {path}, Parent: {parentPath}, Index: {index}");
                             return null;
                         }
                     
@@ -750,7 +750,7 @@ namespace GAOS.DataStructure.Editor
                 }
             catch (Exception ex)
                 {
-                Debug.LogError($"GetPathValue Error: {ex.Message}\n{ex.StackTrace}");
+                GLog.Error<DataSystemEditorLogger>($"GetPathValue Error: {ex.Message}\n{ex.StackTrace}");
                         return null;
             }
         }
@@ -759,11 +759,11 @@ namespace GAOS.DataStructure.Editor
         {
             try
             {
-                Debug.Log($"SetPathValue: path='{path}', value={value}");
+                GLog.Info<DataSystemEditorLogger>($"SetPathValue: path='{path}', value={value}");
                 
                 if (_currentDataStructure == null || _currentDataStructure.Container == null)
             {
-                    Debug.LogWarning($"SetPathValue: Missing data - DataStructure: {_currentDataStructure != null}, Container: {_currentDataStructure?.Container != null}");
+                    GLog.Warning<DataSystemEditorLogger>($"SetPathValue: Missing data - DataStructure: {_currentDataStructure != null}, Container: {_currentDataStructure?.Container != null}");
                 return;
             }
             
@@ -778,7 +778,7 @@ namespace GAOS.DataStructure.Editor
                 }
                 catch (Exception ex)
                 {
-                Debug.LogError($"SetPathValue Error: {ex.Message}\n{ex.StackTrace}");
+                GLog.Error<DataSystemEditorLogger>($"SetPathValue Error: {ex.Message}\n{ex.StackTrace}");
                 }
         }
 
@@ -1023,7 +1023,7 @@ namespace GAOS.DataStructure.Editor
         /// </summary>
         public void EnsureSelection(string path)
         {
-            Debug.Log($"EnsureSelection called with path: '{path}'");
+            GLog.Info<DataSystemEditorLogger>($"EnsureSelection called with path: '{path}'");
             
             // If we have a tree builder, check if the path exists in it
             if (_treeBuilder != null && _treeBuilder.TreeItems.ContainsKey(path))
@@ -1055,7 +1055,7 @@ namespace GAOS.DataStructure.Editor
                         if (_currentDataStructure.Container.Contains(path))
                         {
                             type = _currentDataStructure.Container.GetValueType(path);
-                            Debug.Log($"Root property '{path}' has type: {type?.Name}");
+                            GLog.Info<DataSystemEditorLogger>($"Root property '{path}' has type: {type?.Name}");
                         }
                     }
                     else
@@ -1082,7 +1082,7 @@ namespace GAOS.DataStructure.Editor
                                 itemKey = itemKey.Substring(1, itemKey.Length - 2);
                             }
                             
-                            Debug.Log($"Checking parent path: '{parentPath}', item: '{itemKey}'");
+                            GLog.Info<DataSystemEditorLogger>($"Checking parent path: '{parentPath}', item: '{itemKey}'");
                             
                             // Get parent container
                             DataContainer parentContainer = GetContainerAtPath(parentPath);
@@ -1090,21 +1090,21 @@ namespace GAOS.DataStructure.Editor
                             {
                                 // Get actual type from parent container
                                 type = parentContainer.GetValueType(itemKey);
-                                Debug.Log($"Item '{itemKey}' in parent has type: {type?.Name}");
+                                GLog.Info<DataSystemEditorLogger>($"Item '{itemKey}' in parent has type: {type?.Name}");
                             }
                         }
                     }
                 }
                 
                 // Select the property with the correct type
-                Debug.Log($"EnsureSelection: Selected path: '{path}', key: '{key}', with type: {type?.Name}");
+                GLog.Info<DataSystemEditorLogger>($"EnsureSelection: Selected path: '{path}', key: '{key}', with type: {type?.Name}");
                 SelectProperty(path, key, type);
                 return;
             }
             
             // Path doesn't exist or no tree builder, fall back to root
             SelectProperty("", "Root", typeof(DataContainer));
-            Debug.Log("EnsureSelection: Selected root container as fallback");
+            GLog.Info<DataSystemEditorLogger>("EnsureSelection: Selected root container as fallback");
         }
 
         #endregion

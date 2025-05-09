@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using GAOS.DataStructure.References;
 using GAOS.DataStructure;
+using GAOS.Logger;
 
 namespace GAOS.DataStructure.Editor
 {
@@ -37,7 +38,7 @@ namespace GAOS.DataStructure.Editor
         {
             if (type != typeof(DataContainer))
             {
-                Debug.LogError($"ContainerEditor cannot handle type {type.Name}");
+                GLog.Error<DataSystemEditorLogger>($"ContainerEditor cannot handle type {type.Name}");
                 return new Label($"Unsupported type: {type.Name}");
             }
 
@@ -66,7 +67,7 @@ namespace GAOS.DataStructure.Editor
         /// </summary>
         private void CreateContainerEditor(VisualElement container, DataContainer dataContainer, Action<object> onValueChanged)
         {
-            Debug.Log($"Creating container editor with {dataContainer.GetKeys().Count()} keys");
+            GLog.Info<DataSystemEditorLogger>($"Creating container editor with {dataContainer.GetKeys().Count()} keys");
             
             // Create table header using base class method
             var tableHeader = CreateTableHeader(true, 
@@ -90,7 +91,7 @@ namespace GAOS.DataStructure.Editor
                     Type propType = dataContainer.GetValueType(key);
                     if (propType == null)
                     {
-                        Debug.LogWarning($"Type for key '{key}' is null, skipping");
+                        GLog.Warning<DataSystemEditorLogger>($"Type for key '{key}' is null, skipping");
                         continue;
                     }
                     
@@ -102,7 +103,7 @@ namespace GAOS.DataStructure.Editor
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError($"Error adding property row for key '{key}': {ex.Message}");
+                    GLog.Error<DataSystemEditorLogger>($"Error adding property row for key '{key}': {ex.Message}");
                     // Continue with other properties
                 }
             }
@@ -217,11 +218,11 @@ namespace GAOS.DataStructure.Editor
                     // Mark asset dirty and refresh hierarchy
                     ApplyStructuralChange();
                     
-                    Debug.Log($"Added new property '{propertyName}' of type {selectedType.Name}");
+                    GLog.Info<DataSystemEditorLogger>($"Added new property '{propertyName}' of type {selectedType.Name}");
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError($"Error adding property: {ex.Message}");
+                    GLog.Error<DataSystemEditorLogger>($"Error adding property: {ex.Message}");
                     EditorUtility.DisplayDialog("Error", $"Failed to add property: {ex.Message}", "OK");
                 }
             });
@@ -315,7 +316,7 @@ namespace GAOS.DataStructure.Editor
                         itemPath = DataContainer.CombinePath(currentPath, key);
                     }
                     
-                    Debug.Log($"ContainerEditor: Selecting property at path: '{itemPath}' (from current path: '{currentPath}', key: '{key}')");
+                    GLog.Info<DataSystemEditorLogger>($"ContainerEditor: Selecting property at path: '{itemPath}' (from current path: '{currentPath}', key: '{key}')");
                     _editorWindow.SelectPropertyInternal(itemPath, key, type);
                 }
             }));

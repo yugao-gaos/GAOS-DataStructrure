@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 using System.IO;
+using GAOS.Logger;
 
 namespace GAOS.DataStructure.Editor
 {
@@ -22,7 +23,7 @@ namespace GAOS.DataStructure.Editor
             }
             else
             {
-                Debug.LogError($"Documentation not found at: {docPath}");
+                GLog.Error<DataSystemEditorLogger>($"Documentation not found at: {docPath}");
                 
                 // Fallback to package documentation URL from package.json
                 string packageJsonPath = Path.Combine(packagePath, "package.json");

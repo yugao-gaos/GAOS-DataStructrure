@@ -7,6 +7,8 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using GAOS.DataStructure.References;
 using GAOS.DataStructure;
+using GAOS.Logger;
+using GAOS.DataStructure.Editor;
 
 namespace GAOS.DataStructure.Editor
 {
@@ -171,7 +173,7 @@ namespace GAOS.DataStructure.Editor
             string currentPath = _editorWindow?.CurrentPath ?? "";
             
             // Debug current path and editor type to help diagnose selection issues
-            Debug.Log($"ApplyStructuralChange: About to refresh hierarchy. CurrentPath='{currentPath}', Editor={GetType().Name}");
+            GLog.Info<DataSystemEditorLogger>($"ApplyStructuralChange: About to refresh hierarchy. CurrentPath='{currentPath}', Editor={GetType().Name}");
             
             // Mark asset dirty first
             MarkDirty();
@@ -185,13 +187,13 @@ namespace GAOS.DataStructure.Editor
                 // If current path is empty, select root
                 if (string.IsNullOrEmpty(currentPath))
                 {
-                    Debug.Log("ApplyStructuralChange: Selecting root container");
+                    GLog.Info<DataSystemEditorLogger>("ApplyStructuralChange: Selecting root container");
                     _editorWindow.SelectProperty("", "Root", typeof(DataContainer));
                 }
                 else
                 {
                     // Try to reselect the previous path
-                    Debug.Log($"ApplyStructuralChange: Restoring selection to path '{currentPath}'");
+                    GLog.Info<DataSystemEditorLogger>($"ApplyStructuralChange: Restoring selection to path '{currentPath}'");
                     _editorWindow.EnsureSelection(currentPath);
                 }
             }
@@ -213,7 +215,7 @@ namespace GAOS.DataStructure.Editor
                     var parentContainer = row.parent;
                     if (parentContainer == null) 
                     {
-                        Debug.LogWarning("Parent container is null, cannot start drag");
+                        GLog.Warning<DataSystemEditorLogger>("Parent container is null, cannot start drag");
                         return;
                     }
                     
