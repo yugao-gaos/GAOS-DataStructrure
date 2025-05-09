@@ -85,11 +85,34 @@ namespace GAOS.DataStructure.Editor
             togglesHeader.style.marginBottom = 4;
             togglesSection.Add(togglesHeader);
 
-            var togglesDesc = new Label("Toggle which properties are included in the generated DataInstance interface. Value types default ON, structure types default OFF.");
+            var togglesDesc = new Label("Toggle which properties are included in the generated DataInstance interface.");
             togglesDesc.style.fontSize = 11;
             togglesDesc.style.color = new Color(0.7f, 0.7f, 0.7f, 1f);
             togglesDesc.style.marginBottom = 8;
             togglesSection.Add(togglesDesc);
+            
+            // Create header for the columns
+            var headerRow = new VisualElement();
+            headerRow.style.flexDirection = FlexDirection.Row;
+            headerRow.style.marginBottom = 8;
+            
+            var propHeader = new Label("Property");
+            propHeader.style.flexGrow = 1;
+            propHeader.style.unityFontStyleAndWeight = FontStyle.Bold;
+            
+            var getSetHeader = new Label("Include");
+            getSetHeader.style.width = 60;
+            getSetHeader.style.unityFontStyleAndWeight = FontStyle.Bold;
+            
+            var metaHeader = new Label("Metadata");
+            metaHeader.style.width = 70;
+            metaHeader.style.unityFontStyleAndWeight = FontStyle.Bold;
+            
+            headerRow.Add(propHeader);
+            headerRow.Add(getSetHeader);
+            headerRow.Add(metaHeader);
+            
+            togglesSection.Add(headerRow);
 
             var allPaths = structure.GetAllPaths().ToList();
             foreach (var path in allPaths)
@@ -100,7 +123,10 @@ namespace GAOS.DataStructure.Editor
                     type == typeof(DataContainer) ||
                     (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>) && type.GetGenericArguments()[0] == typeof(DataContainer)) ||
                     (type.IsGenericType && type.GetGenericTypeDefinition().Name.StartsWith("OrderedDictionary") && type.GetGenericArguments()[0] == typeof(string) && type.GetGenericArguments()[1] == typeof(DataContainer));
+                
                 bool isIncluded = structure.InterfacePropertyPaths.Contains(path);
+                bool hasMetadataAccess = structure.MetadataAccessPaths.Contains(path);
+                
                 // Default: ON for value types, OFF for structure types
                 if (!isIncluded && !structure.InterfacePropertyPaths.Contains(path))
                 {
@@ -111,10 +137,23 @@ namespace GAOS.DataStructure.Editor
                         EditorUtility.SetDirty(structure);
                     }
                 }
-                var toggle = new Toggle($"{path} ({type.Name})");
-                toggle.value = isIncluded;
-                toggle.style.marginBottom = 2;
-                toggle.RegisterValueChangedCallback(evt => {
+                
+                // Create a row for each property
+                var row = new VisualElement();
+                row.style.flexDirection = FlexDirection.Row;
+                row.style.marginBottom = 2;
+                
+                var propLabel = new Label($"{path} ({type.Name})");
+                propLabel.style.flexGrow = 1;
+                
+                // Declare both toggles at the beginning
+                var includeToggle = new Toggle();
+                var metadataToggle = new Toggle();
+                
+                // Include property toggle
+                includeToggle.style.width = 60;
+                includeToggle.value = isIncluded;
+                includeToggle.RegisterValueChangedCallback(evt => {
                     if (evt.newValue)
                     {
                         if (!structure.InterfacePropertyPaths.Contains(path))
@@ -123,10 +162,48 @@ namespace GAOS.DataStructure.Editor
                     else
                     {
                         structure.InterfacePropertyPaths.Remove(path);
+                        
+                        // If we're disabling the property, also disable metadata access
+                        if (structure.MetadataAccessPaths.Contains(path))
+                        {
+                            structure.MetadataAccessPaths.Remove(path);
+                            metadataToggle.value = false;
+                        }
                     }
                     EditorUtility.SetDirty(structure);
                 });
-                togglesSection.Add(toggle);
+                
+                // Metadata access toggle
+                metadataToggle.style.width = 70;
+                metadataToggle.value = hasMetadataAccess;
+                metadataToggle.SetEnabled(isIncluded); // Only enable if property is included
+                metadataToggle.RegisterValueChangedCallback(evt => {
+                    if (evt.newValue)
+                    {
+                        if (!structure.MetadataAccessPaths.Contains(path))
+                            structure.MetadataAccessPaths.Add(path);
+                    }
+                    else
+                    {
+                        structure.MetadataAccessPaths.Remove(path);
+                    }
+                    EditorUtility.SetDirty(structure);
+                });
+                
+                // Update metadata toggle when include toggle changes
+                includeToggle.RegisterValueChangedCallback(evt => {
+                    metadataToggle.SetEnabled(evt.newValue);
+                    if (!evt.newValue && metadataToggle.value)
+                    {
+                        metadataToggle.value = false;
+                    }
+                });
+                
+                row.Add(propLabel);
+                row.Add(includeToggle);
+                row.Add(metadataToggle);
+                
+                togglesSection.Add(row);
             }
             root.Add(togglesSection);
 

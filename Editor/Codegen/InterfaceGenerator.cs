@@ -74,6 +74,8 @@ namespace GAOS.DataStructure.Editor.Codegen
                 var type = _structure.GetPathType(path);
                 if (type == null) continue;
                 string propertyName = ValidateIdentifier(GetPropertyNameFromPath(path));
+                
+                // Regular property
                 _builder.AppendLine();
                 _builder.AppendLine("        /// <summary>");
                 _builder.AppendLine($"        /// Gets{(IsStructureType(type) ? "" : " or sets")} the {propertyName}.");
@@ -82,6 +84,16 @@ namespace GAOS.DataStructure.Editor.Codegen
                     _builder.AppendLine($"        {GetTypeName(type)} {propertyName} {{ get; }}");
                 else
                     _builder.AppendLine($"        {GetTypeName(type)} {propertyName} {{ get; set; }}");
+                
+                // Add metadata access method if enabled for this property
+                if (_structure.MetadataAccessPaths.Contains(path) && !IsStructureType(type))
+                {
+                    _builder.AppendLine();
+                    _builder.AppendLine("        /// <summary>");
+                    _builder.AppendLine($"        /// Gets the original metadata value for {propertyName} without runtime modifications.");
+                    _builder.AppendLine("        /// </summary>");
+                    _builder.AppendLine($"        {GetTypeName(type)} {propertyName}Metadata {{ get; }}");
+                }
             }
 
             _builder.AppendLine("    }");

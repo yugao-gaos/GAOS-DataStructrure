@@ -17,6 +17,7 @@ namespace GAOS.DataStructure
         [SerializeField] private string _structureId;
         [SerializeField] private string _description;
         [SerializeField] private List<string> _interfacePropertyPaths = new List<string>();
+        [SerializeField] private List<string> _metadataAccessPaths = new List<string>();
         [SerializeField] private string _generatedInstanceTypeFullName;
         
         /// <summary>
@@ -35,6 +36,11 @@ namespace GAOS.DataStructure
         public DataContainer Container => _container;
 
         public List<string> InterfacePropertyPaths => _interfacePropertyPaths;
+        
+        /// <summary>
+        /// Paths that should have metadata access methods generated
+        /// </summary>
+        public List<string> MetadataAccessPaths => _metadataAccessPaths;
 
         /// <summary>
         /// The generated DataInstance type's full name.

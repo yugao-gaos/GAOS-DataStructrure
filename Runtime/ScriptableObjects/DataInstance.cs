@@ -20,6 +20,9 @@ namespace GAOS.DataStructure
         // Runtime-only container (not serialized)
         [NonSerialized] private DataContainer _runtimeContainer;
         
+        // Dictionary to store original metadata values for fields changed at runtime
+        [NonSerialized] private Dictionary<string, object> _originalMetadataValues = new Dictionary<string, object>();
+        
         /// <summary>
         /// Serializable entry for storing path-value overrides.
         /// </summary>
@@ -45,7 +48,7 @@ namespace GAOS.DataStructure
         /// The runtime data container for this instance.
         /// Initialized on demand with the parent structure and all overrides applied.
         /// </summary>
-        public DataContainer Container 
+        protected internal DataContainer Container 
         {
             get 
             {
@@ -62,7 +65,7 @@ namespace GAOS.DataStructure
         /// </summary>
         /// <param name="parent">The parent structure.</param>
         /// <param name="container">The container with initial values.</param>
-        public void Initialize(DataStructure parent, DataContainer container)
+        internal void Initialize(DataStructure parent, DataContainer container)
         {
             _parentStructure = parent;
             
@@ -146,25 +149,10 @@ namespace GAOS.DataStructure
         /// <summary>
         /// Resets the instance by clearing all overrides.
         /// </summary>
-        public void Reset()
+        protected internal void Reset()
         {
             _overrides.Clear();
             _runtimeContainer = null; // Force recreation next time it's accessed
-        }
-
-        /// <summary>
-        /// Sets a value for the specified path, automatically tracking it as an override.
-        /// </summary>
-        /// <typeparam name="T">The type of the value.</typeparam>
-        /// <param name="path">The path to set.</param>
-        /// <param name="value">The value to set.</param>
-        public void SetValue<T>(string path, T value)
-        {
-            // Set in runtime container
-            Container.PathSet(path, value);
-            
-            // Record as an override
-            UpdateOverride(path, value);
         }
 
         /// <summary>
@@ -173,10 +161,79 @@ namespace GAOS.DataStructure
         /// <typeparam name="T">The expected type of the value.</typeparam>
         /// <param name="path">The path to get.</param>
         /// <param name="defaultValue">The default value to return if the path does not exist.</param>
-        /// <returns>The value at the specified path.</returns>
+        /// <returns>The current runtime value at the specified path.</returns>
         public T GetValue<T>(string path, T defaultValue = default)
         {
             return Container.PathGet(path, defaultValue);
+        }
+        
+        /// <summary>
+        /// Gets the original metadata value (template + overrides without runtime changes) for the specified path.
+        /// </summary>
+        /// <typeparam name="T">The expected type of the value.</typeparam>
+        /// <param name="path">The path to get.</param>
+        /// <param name="defaultValue">The default value to return if the path does not exist.</param>
+        /// <returns>The original metadata value at the specified path.</returns>
+        public T GetMetadataValue<T>(string path, T defaultValue = default)
+        {
+            // If we have a stored original value, return it
+            if (_originalMetadataValues.TryGetValue(path, out var originalValue))
+            {
+                return (T)originalValue;
+            }
+            
+            // If not modified at runtime, current value is the original
+            return Container.PathGet(path, defaultValue);
+        }
+        
+        /// <summary>
+        /// Sets a value for the specified path. In editor, this creates an override; at runtime, it only changes the runtime value.
+        /// </summary>
+        /// <typeparam name="T">The type of the value.</typeparam>
+        /// <param name="path">The path to set.</param>
+        /// <param name="value">The value to set.</param>
+        public void SetValue<T>(string path, T value)
+        {
+            #if UNITY_EDITOR
+            // Only create overrides in editor AND when not in play mode
+            if (!UnityEditor.EditorApplication.isPlaying)
+            {
+                SetOverrideInternal<T>(path, value);
+                return;
+            }
+            #endif
+            
+            // In all other cases (play mode or builds), just use runtime values
+            SetRuntimeValueInternal<T>(path, value);
+        }
+        
+        #if UNITY_EDITOR
+        /// <summary>
+        /// Internal method to set an override value in editor mode.
+        /// </summary>
+        private void SetOverrideInternal<T>(string path, T value)
+        {
+            // Set in runtime container
+            Container.PathSet(path, value);
+            
+            // Record as an override
+            UpdateOverride(path, value);
+        }
+        #endif
+        
+        /// <summary>
+        /// Internal method to set a runtime value without creating an override.
+        /// </summary>
+        private void SetRuntimeValueInternal<T>(string path, T value)
+        {
+            // Store original value if this is the first modification
+            if (!_originalMetadataValues.ContainsKey(path))
+            {
+                _originalMetadataValues[path] = Container.PathGet<object>(path);
+            }
+            
+            // Update runtime container only
+            Container.PathSet(path, value);
         }
 
         /// <summary>
@@ -184,7 +241,7 @@ namespace GAOS.DataStructure
         /// </summary>
         /// <param name="path">The path to remove the override for.</param>
         /// <returns>True if an override was removed, false otherwise.</returns>
-        public bool RemoveOverride(string path)
+        protected internal bool RemoveOverride(string path)
         {
             int initialCount = _overrides.Count;
             _overrides.RemoveAll(o => o.Path == path);
@@ -242,7 +299,7 @@ namespace GAOS.DataStructure
         /// Gets all override entries.
         /// </summary>
         /// <returns>Dictionary mapping paths to values.</returns>
-        public Dictionary<string, object> GetAllOverrides()
+        protected internal Dictionary<string, object> GetAllOverrides()
         {
             var result = new Dictionary<string, object>();
             
@@ -270,9 +327,19 @@ namespace GAOS.DataStructure
         /// </summary>
         /// <param name="path">The path to check.</param>
         /// <returns>True if the path has an override, false otherwise.</returns>
-        public bool HasOverride(string path)
+        protected internal bool HasOverride(string path)
         {
             return _overrides.Exists(o => o.Path == path);
+        }
+        
+        /// <summary>
+        /// Checks if a path has been modified at runtime.
+        /// </summary>
+        /// <param name="path">The path to check.</param>
+        /// <returns>True if the path has been modified at runtime, false otherwise.</returns>
+        public bool IsRuntimeModified(string path)
+        {
+            return _originalMetadataValues.ContainsKey(path);
         }
 
         /// <summary>
@@ -384,7 +451,7 @@ namespace GAOS.DataStructure
         /// <param name="instanceName">Optional name for the instance.</param>
         /// <returns>The created DataInstance asset.</returns>
         #if UNITY_EDITOR
-        public static DataInstance CreatePersistentInstance(DataStructure structure, string path, string instanceName = null)
+        internal static DataInstance CreatePersistentInstance(DataStructure structure, string path, string instanceName = null)
         {
             if (structure == null)
                 throw new ArgumentNullException(nameof(structure));

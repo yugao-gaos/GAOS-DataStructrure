@@ -74,19 +74,30 @@ namespace GAOS.DataStructure.Editor.Codegen
                 var type = _structure.GetPathType(path);
                 if (type == null) continue;
                 string propertyName = ValidateIdentifier(GetPropertyNameFromPath(path));
+                string escapedPath = path.Replace("\"", "\\\"");
+                
+                // Regular property
                 _builder.AppendLine();
                 _builder.AppendLine("        /// <summary>");
                 _builder.AppendLine($"        /// Gets{(IsStructureType(type) ? "" : " or sets")} the {propertyName}.");
                 _builder.AppendLine("        /// </summary>");
                 if (IsStructureType(type))
                 {
-                    string escapedPath = path.Replace("\"", "\\\"");
                     _builder.AppendLine($"        public {GetTypeName(type)} {propertyName} => GetValue<{GetTypeName(type)}>(\"{escapedPath}\");");
                 }
                 else
                 {
-                    string escapedPath = path.Replace("\"", "\\\"");
                     _builder.AppendLine($"        public {GetTypeName(type)} {propertyName} {{ get => GetValue<{GetTypeName(type)}>(\"{escapedPath}\"); set => SetValue(\"{escapedPath}\", value); }}");
+                }
+                
+                // Add metadata access method implementation if enabled for this property
+                if (_structure.MetadataAccessPaths.Contains(path) && !IsStructureType(type))
+                {
+                    _builder.AppendLine();
+                    _builder.AppendLine("        /// <summary>");
+                    _builder.AppendLine($"        /// Gets the original metadata value for {propertyName} without runtime modifications.");
+                    _builder.AppendLine("        /// </summary>");
+                    _builder.AppendLine($"        public {GetTypeName(type)} {propertyName}Metadata => GetMetadataValue<{GetTypeName(type)}>(\"{escapedPath}\");");
                 }
             }
 
