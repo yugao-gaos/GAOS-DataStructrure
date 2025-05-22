@@ -33,6 +33,7 @@ namespace GAOS.DataStructure.Editor
         // Property editors
         private SimpleValueEditor _simpleValueEditor;
         private UnityObjectReferenceEditor _unityObjectReferenceEditor;
+        private EnumEditor _enumEditor;
         
         // Delegate for handling tree item selection
         public delegate void SelectPropertyHandler(string path, string key, Type type);
@@ -48,6 +49,7 @@ namespace GAOS.DataStructure.Editor
             // Initialize editors
             _simpleValueEditor = new SimpleValueEditor();
             _unityObjectReferenceEditor = new UnityObjectReferenceEditor();
+            _enumEditor = new EnumEditor();
         }
 
         
@@ -996,7 +998,17 @@ namespace GAOS.DataStructure.Editor
             // Add appropriate editor based on type
             bool editorCreated = false;
             
-            if (_simpleValueEditor.CanHandleType(type))
+            if (_enumEditor.CanHandleType(type))
+            {
+                var editorField = _enumEditor.CreateEditorField(type, currentValue, newValue => 
+                {
+                    // Update the value in the data instance (creates an override)
+                    UpdateInstanceValue(path, type, newValue);
+                });
+                editorContainer.Add(editorField);
+                editorCreated = true;
+            }
+            else if (_simpleValueEditor.CanHandleType(type))
             {
                 var editorField = _simpleValueEditor.CreateEditorField(type, currentValue, newValue => 
                 {
@@ -1380,6 +1392,8 @@ namespace GAOS.DataStructure.Editor
                 return "OrderedDictionary<string, DataContainer>";
             else if (type == typeof(UnityObjectReference))
                 return "UnityObjectReference";
+            else if (type.IsEnum)
+                return $"Enum ({type.Name})";
             else
                 return type.Name;
         }
@@ -1453,6 +1467,8 @@ namespace GAOS.DataStructure.Editor
                 return "Dictionary<String, Container>";
             if (type == typeof(UnityObjectReference))
                 return "Unity Object Reference";
+            if (type.IsEnum)
+                return $"Enum ({type.Name})";
             
             return type.Name;
         }
