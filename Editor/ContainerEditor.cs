@@ -146,16 +146,63 @@ namespace GAOS.DataStructure.Editor
                 "Container",
                 "List<Container>",
                 "OrderedDictionary<string, Container>",
-                "UnityObjectReference"
+                "UnityObjectReference",
+                "Enum"
             };
             typeDropdown.choices = typeOptions;
             typeDropdown.index = 0;
             newPropertyRow.Add(typeDropdown);
             
+            // Add enum type selector (hidden by default)
+            var enumTypeSelector = new PopupField<string>();
+            enumTypeSelector.style.width = 160;
+            enumTypeSelector.style.marginRight = 4;
+            enumTypeSelector.style.flexShrink = 0;
+            enumTypeSelector.style.display = DisplayStyle.None; // Hidden by default
+            
+            // Populate with registered enum types
+            var enumTypes = EnumRegistry.GetRegisteredEnumTypes();
+            if (enumTypes.Count > 0)
+            {
+                enumTypeSelector.choices = enumTypes.Keys.ToList();
+                enumTypeSelector.index = 0;
+            }
+            else
+            {
+                // If no enum types are registered, show a placeholder
+                enumTypeSelector.choices = new List<string> { "No enum types registered" };
+                enumTypeSelector.SetEnabled(false);
+            }
+            newPropertyRow.Add(enumTypeSelector);
+            
             // Empty value preview placeholder
             var valuePreviewLabel = new Label();
             valuePreviewLabel.style.flexGrow = 1;
             newPropertyRow.Add(valuePreviewLabel);
+            
+            // Show/hide enum type selector based on main type dropdown
+            typeDropdown.RegisterValueChangedCallback(evt => {
+                // Show enum type selector only when "Enum" is selected
+                if (evt.newValue == "Enum")
+                {
+                    enumTypeSelector.style.display = DisplayStyle.Flex;
+                    
+                    // Check if we have registered enum types
+                    if (enumTypes.Count == 0)
+                    {
+                        // Show a warning if no enum types are registered
+                        valuePreviewLabel.text = "No enum types registered. Mark enums with [DataStructureEnum] or register manually.";
+                    }
+                }
+                else
+                {
+                    enumTypeSelector.style.display = DisplayStyle.None;
+                    valuePreviewLabel.text = "";
+                }
+                
+                // Clear any validation errors
+                typeDropdown.RemoveFromClassList("validation-error");
+            });
             
             // Add button
             var actionsContainer = new VisualElement();
@@ -192,10 +239,40 @@ namespace GAOS.DataStructure.Editor
                     }
                     
                     // Get the selected type
-                    Type selectedType = GetTypeFromSelection(typeDropdown.index);
+                    Type selectedType;
+                    
+                    // Handle enum type selection
+                    if (typeDropdown.value == "Enum")
+                    {
+                        if (enumTypes.Count == 0)
+                        {
+                            // No registered enum types
+                            enumTypeSelector.AddToClassList("validation-error");
+                            return;
+                        }
+                        
+                        // Get the selected enum type from the registry
+                        string selectedEnumTypeName = enumTypeSelector.value;
+                        if (enumTypes.TryGetValue(selectedEnumTypeName, out Type enumType))
+                        {
+                            selectedType = enumType;
+                        }
+                        else
+                        {
+                            // Enum type not found
+                            enumTypeSelector.AddToClassList("validation-error");
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        // Handle standard types
+                        selectedType = GetTypeFromSelection(typeDropdown.index);
+                    }
+                    
                     if (selectedType == null)
                         return;
-                        
+                    
                     // Create default value
                     object defaultValue = CreateDefaultValue(selectedType);
                     
@@ -208,26 +285,19 @@ namespace GAOS.DataStructure.Editor
                     // Reset fields
                     keyField.value = "";
                     typeDropdown.index = 0;
+                    enumTypeSelector.style.display = DisplayStyle.None;
                     keyField.RemoveFromClassList("validation-error");
                     typeDropdown.RemoveFromClassList("validation-error");
-                    
-                    // Refresh the container editor
-                    container.Clear();
-                    CreateContainerEditor(container, dataContainer, onValueChanged);
-                    
-                    // Mark asset dirty and refresh hierarchy
-                    ApplyStructuralChange();
-                    
-                    GLog.Info<DataSystemEditorLogger>($"Added new property '{propertyName}' of type {selectedType.Name}");
+                    enumTypeSelector.RemoveFromClassList("validation-error");
                 }
                 catch (Exception ex)
                 {
+                    // Show error
                     GLog.Error<DataSystemEditorLogger>($"Error adding property: {ex.Message}");
-                    EditorUtility.DisplayDialog("Error", $"Failed to add property: {ex.Message}", "OK");
+                    valuePreviewLabel.text = $"Error: {ex.Message}";
                 }
-            });
-            addButton.text = "Add";
-            addButton.SetEnabled(false); // Disabled by default
+            }) { text = "Add" };
+            addButton.style.width = 60;
             actionsContainer.Add(addButton);
             
             // Enable add button only when both fields have values
@@ -546,6 +616,7 @@ namespace GAOS.DataStructure.Editor
                 case 9: return typeof(List<DataContainer>); // List<Container>
                 case 10: return typeof(OrderedDictionary<string, DataContainer>); // OrderedDictionary<string, Container>
                 case 11: return typeof(UnityObjectReference); // UnityObjectReference
+                case 12: return null; // "Enum" - requires secondary selection
                 default: return null;
             }
         }

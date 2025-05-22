@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Changelog - GAOS DataStructure</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .version-container {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border-radius: 8px;
+            background: #f8f9fa;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .version-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .version-number {
+            font-size: 1.5rem;
+            color: #2196F3;
+            font-weight: 700;
+        }
+        
+        .version-date {
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .change-type {
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #343a40;
+        }
+        
+        .change-type.added {
+            color: #28a745;
+        }
+        
+        .change-type.changed {
+            color: #fd7e14;
+        }
+        
+        .change-type.deprecated {
+            color: #6c757d;
+        }
+        
+        .change-type.removed {
+            color: #dc3545;
+        }
+        
+        .change-type.fixed {
+            color: #17a2b8;
+        }
+        
+        .change-list {
+            list-style-type: none;
+            padding-left: 0.5rem;
+        }
+        
+        .change-list li {
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+            position: relative;
+            line-height: 1.6;
+        }
+        
+        .change-list li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #6c757d;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin: 2rem 0;
+            color: #2196F3;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        code {
+            background-color: rgba(0, 0, 0, 0.05);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Changelog</h1>
+        <p>A detailed record of all notable changes to the GAOS DataStructure package</p>
+    </header>
+
+    <div class="nav-links">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="quick-start.html">Quick Start</a></li>
+            <li><a href="concepts.html">Core Concepts</a></li>
+            <li><a href="advanced.html">Advanced Topics</a></li>
+            <li><a href="api.html">API Reference</a></li>
+        </ul>
+    </div>
+
+    <section id="introduction">
+        <p>This changelog follows the principles of <a href="http://keepachangelog.com/en/1.0.0/" target="_blank">Keep a Changelog</a> and adheres to <a href="http://semver.org/spec/v2.0.0.html" target="_blank">Semantic Versioning</a>.</p>
+    </section>
+
+    <section id="versions">
+        <div class="version-container">
+            <div class="version-heading">
+                <span class="version-number">1.1.0</span>
+                <span class="version-date">May 21, 2025</span>
+            </div>
+            <div class="change-type added">Added</div>
+            <ul class="change-list">
+                <li>Comprehensive enum support with automatic type discovery</li>
+                <li>Added <code>[DataStructureEnum]</code> attribute for marking enums to use in DataStructure</li>
+                <li>Added <code>EnumRegistry</code> for registering and managing enum types</li>
+                <li>Support for both regular enums and <code>[Flags]</code> enums with multi-select UI</li>
+                <li>Optimized enum conversion with cached delegates for better performance</li>
+                <li>Detailed documentation for enum support</li>
+            </ul>
+        </div>
+
+        <div class="version-container">
+            <div class="version-heading">
+                <span class="version-number">1.0.0</span>
+                <span class="version-date">May 10, 2025</span>
+            </div>
+            <div class="change-type added">Added</div>
+            <ul class="change-list">
+                <li>Integration with GAOS.Logger package for improved logging capabilities</li>
+                <li>Added dependency on com.gaos.logger package</li>
+            </ul>
+        </div>
+
+        <div class="version-container">
+            <div class="version-heading">
+                <span class="version-number">0.9.0</span>
+                <span class="version-date">May 5, 2025</span>
+            </div>
+            <div class="change-type added">Added</div>
+            <ul class="change-list">
+                <li>Robust DataStructure and DataInstance editor</li>
+                <li>Enhanced editor functionality for managing hierarchical data</li>
+                <li>Improved UI for data editing workflows</li>
+            </ul>
+        </div>
+
+        <div class="version-container">
+            <div class="version-heading">
+                <span class="version-number">0.5.0</span>
+                <span class="version-date">April 23, 2023</span>
+            </div>
+            <div class="change-type added">Added</div>
+            <ul class="change-list">
+                <li>Initial release</li>
+                <li>Core DataContainer class</li>
+                <li>DataStructure and DataInstance ScriptableObjects</li>
+                <li>DataContainerManager integrated with ServiceLocator</li>
+                <li>JSON serialization/deserialization</li>
+                <li>Deep copy functionality</li>
+                <li>Custom editor support</li>
+            </ul>
+        </div>
+    </section>
+
+    <a href="index.html" class="back-link">← Back to Home</a>
+
+    <footer>
+        <p>GAOS DataStructure | <a href="index.html">Home</a> | <a href="https://www.linkedin.com/in/yugao-luckyvr">Yu Gao</a></p>
+    </footer>
+</body>
+</html> 

@@ -22,6 +22,13 @@ namespace GAOS.DataStructure
 
             Type type = value.GetType();
 
+            // Handle enum types - store as integer value for reliable serialization
+            if (type.IsEnum)
+            {
+                // Convert enum to its underlying integer value
+                return Convert.ToInt32(value).ToString();
+            }
+
             // Handle primitive types
             if (type.IsPrimitive || type == typeof(string) || type == typeof(decimal))
                 return value.ToString();
@@ -84,6 +91,36 @@ namespace GAOS.DataStructure
 
             if (serializedValue == "null")
                 return null;
+                
+            // Handle enum types - optimized with EnumRegistry
+            if (targetType.IsEnum)
+            {
+                if (int.TryParse(serializedValue, out int enumIntValue))
+                {
+                    // First try to use a registered converter (no reflection)
+                    var converter = EnumRegistry.GetConverter(targetType);
+                    if (converter != null)
+                    {
+                        // Use pre-compiled converter
+                        return converter(enumIntValue);
+                    }
+                    else
+                    {
+                        // Fallback to Enum.ToObject (uses reflection)
+                        return Enum.ToObject(targetType, enumIntValue);
+                    }
+                }
+                else
+                {
+                    // Fallback to first enum value if parsing fails
+                    Array enumValues = Enum.GetValues(targetType);
+                    if (enumValues.Length > 0)
+                    {
+                        return enumValues.GetValue(0);
+                    }
+                    return Enum.ToObject(targetType, 0); // Default to zero
+                }
+            }
 
             // Handle primitive types
             if (targetType == typeof(string))

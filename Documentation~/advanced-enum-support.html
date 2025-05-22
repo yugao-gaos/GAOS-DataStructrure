@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enum Support - GAOS DataStructure</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles-advanced.css">
+</head>
+<body>
+    <header>
+        <h1>Enum Support</h1>
+        <p>Using enum types in GAOS DataStructure</p>
+    </header>
+
+    <div class="nav-links">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="quick-start.html">Quick Start</a></li>
+            <li><a href="concepts.html">Core Concepts</a></li>
+            <li><a href="advanced.html">Advanced Topics</a></li>
+            <li><a href="api.html">API Reference</a></li>
+        </ul>
+    </div>
+
+    <section id="introduction">
+        <h2>Working with Enums in DataStructure</h2>
+        <p>
+            DataStructure supports storing and manipulating enum values, providing a type-safe way to work with categorical data in your game.
+            Enums offer a clean, self-documenting approach to representing choices, states, or options in your game data.
+        </p>
+    </section>
+
+    <section class="concept-box">
+        <h2>Registering Enum Types</h2>
+        <p>
+            Before an enum can be used in DataStructure, it must be registered with the system. There are two ways to register enum types:
+        </p>
+
+        <h3>1. Using the DataStructureEnum Attribute</h3>
+        <p>
+            The simplest way to register an enum is to mark it with the <code>[DataStructureEnum]</code> attribute:
+        </p>
+        <pre class="code-block">
+using GAOS.DataStructure;
+using System;
+
+// Regular enum example
+[DataStructureEnum]
+public enum ItemRarity
+{
+    Common,
+    Uncommon,
+    Rare,
+    Epic,
+    Legendary
+}
+
+// Flags enum example
+[Flags]
+[DataStructureEnum]
+public enum StatusEffects
+{
+    None = 0,
+    Poisoned = 1 << 0,    // 1
+    Burning = 1 << 1,     // 2
+    Frozen = 1 << 2,      // 4
+    Stunned = 1 << 3,     // 8
+    Bleeding = 1 << 4,    // 16
+}
+</pre>
+        <p>
+            Enums marked with this attribute are automatically discovered and registered during initialization, requiring no additional code.
+        </p>
+
+        <h3>2. Manual Registration</h3>
+        <p>
+            You can also register enum types manually using the <code>EnumRegistry</code> class:
+        </p>
+        <pre class="code-block">
+// Register in a static constructor
+static YourClass()
+{
+    EnumRegistry.RegisterEnum&lt;WeaponType&gt;();
+}
+
+// Or register at runtime
+void InitializeData()
+{
+    EnumRegistry.RegisterEnum&lt;DamageType&gt;();
+    // Continue with other initialization...
+}
+</pre>
+        <p>
+            Manual registration is useful when you want to register enums from third-party code or when you want more control over when registration occurs.
+        </p>
+    </section>
+
+    <section class="concept-box">
+        <h2>Using Enums in DataStructure</h2>
+        <p>
+            Once registered, enums can be used like any other data type in your DataStructure containers:
+        </p>
+        <pre class="code-block">
+// Create a container with an enum value
+var container = new DataContainer();
+container.SetValue&lt;ItemRarity&gt;("itemRarity", ItemRarity.Rare);
+
+// Get an enum value
+ItemRarity rarity = container.GetValue&lt;ItemRarity&gt;("itemRarity");
+if (rarity == ItemRarity.Legendary)
+{
+    // Handle legendary item logic
+}
+
+// Use in nested structures
+container.SetValue&lt;StatusEffects&gt;("player.status.effects", StatusEffects.Poisoned | StatusEffects.Burning);
+
+// Check for specific flags
+StatusEffects effects = container.GetValue&lt;StatusEffects&gt;("player.status.effects");
+if ((effects & StatusEffects.Poisoned) != 0)
+{
+    // Handle poisoned status
+}
+</pre>
+    </section>
+
+    <section class="concept-box">
+        <h2>Flags Enum Support</h2>
+        <p>
+            DataStructure has special support for enums marked with the <code>[Flags]</code> attribute:
+        </p>
+        <ul>
+            <li>The editor UI displays a multi-select interface for flags enums</li>
+            <li>Multiple values can be combined using bitwise operations</li>
+            <li>Individual flags can be checked with bitwise operations</li>
+        </ul>
+        <p>
+            This makes flags enums ideal for representing combinations of options or states, such as:
+        </p>
+        <ul>
+            <li>Status effects on a character</li>
+            <li>Permission settings</li>
+            <li>Configuration options</li>
+            <li>Collision layers</li>
+        </ul>
+    </section>
+
+    <section class="concept-box">
+        <h2>Best Practices</h2>
+        <h3>Naming and Organization</h3>
+        <ul>
+            <li>Use singular names for regular enums (ItemType, WeaponClass)</li>
+            <li>Use plural names for flags enums (StatusEffects, CharacterAttributes)</li>
+            <li>Group related enums in appropriate namespaces</li>
+        </ul>
+
+        <h3>Value Assignment</h3>
+        <ul>
+            <li>For flags enums, always use powers of two (1, 2, 4, 8, etc.) or bit shift operations (1 << 0, 1 << 1, etc.)</li>
+            <li>Include a None = 0 value in flags enums</li>
+            <li>Consider including an "Unknown" or "Default" value in regular enums</li>
+        </ul>
+
+        <h3>Performance Considerations</h3>
+        <ul>
+            <li>Enum registration is optimized to use reflection only during initialization</li>
+            <li>Runtime operations use cached type information for performance</li>
+            <li>Enum values are serialized as integers for reliability</li>
+        </ul>
+    </section>
+
+    <section class="concept-box">
+        <h2>Technical Details</h2>
+        <p>
+            DataStructure uses several components to support enums:
+        </p>
+        <ul>
+            <li><strong>EnumRegistry</strong>: Central registry that maintains type information for all registered enums</li>
+            <li><strong>DataStructureEnumAttribute</strong>: Attribute for automatic registration</li>
+            <li><strong>EnumEditor</strong>: Custom editor UI for displaying and editing enum values</li>
+        </ul>
+        <p>
+            Serialization is handled automatically, with enum values stored as integers for maximum compatibility across different platforms and versions.
+        </p>
+    </section>
+
+    <a href="advanced.html" class="back-link">← Back to Advanced Topics</a>
+
+    <footer>
+        <p>GAOS DataStructure | <a href="index.html">Home</a> | <a href="https://www.linkedin.com/in/yugao-luckyvr">Yu Gao</a></p>
+    </footer>
+</body>
+</html> 

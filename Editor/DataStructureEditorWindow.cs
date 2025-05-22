@@ -34,6 +34,7 @@ namespace GAOS.DataStructure.Editor
         private IPropertyEditor _containerListEditor;
         private IPropertyEditor _containerDictionaryEditor;
         private IPropertyEditor _containerEditor;
+        private IPropertyEditor _enumEditor;
         
         // Public property to access the current path
         public string CurrentPath => _currentPath;
@@ -52,12 +53,16 @@ namespace GAOS.DataStructure.Editor
         /// </summary>
         public void CreateGUI()
         {
+            // Initialize enum registry to discover registered enum types
+            EnumRegistry.Initialize();
+            
             // Setup property editors
             _simpleValueEditor = new SimpleValueEditor();
             _unityObjectReferenceEditor = new UnityObjectReferenceEditor();
             _containerListEditor = new ContainerListEditor(this);
             _containerDictionaryEditor = new ContainerDictionaryEditor(this);
             _containerEditor = new ContainerEditor(this);
+            _enumEditor = new EnumEditor();
             
             // Load UI from UXML
             var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Packages/com.gaos.datastructure/Editor/UIToolkit/DataStructureEditor.uxml");
@@ -411,6 +416,7 @@ namespace GAOS.DataStructure.Editor
             {
                 foreach (var editor in new IPropertyEditor[] { 
                     _simpleValueEditor, 
+                    _enumEditor,
                     _unityObjectReferenceEditor, 
                     _containerEditor,
                     _containerListEditor, 
@@ -851,6 +857,10 @@ namespace GAOS.DataStructure.Editor
         // Helper method to get the proper C# type name
         private string GetCodeTypeName(Type type)
         {
+            // Add enum type handling
+            if (type != null && type.IsEnum)
+                return type.Name;
+                
             if (type == typeof(string))
                 return "string";
             else if (type == typeof(int))
@@ -902,6 +912,10 @@ namespace GAOS.DataStructure.Editor
             if (type == null)
                 return "(none)";
 
+            // Add enum type handling
+            if (type.IsEnum)
+                return $"Enum ({type.Name})";
+
             if (type == typeof(string))
                 return "String";
             if (type == typeof(int))
@@ -934,6 +948,18 @@ namespace GAOS.DataStructure.Editor
         {
             if (type == null)
                 return null;
+                
+            // Add enum default value creation
+            if (type.IsEnum)
+            {
+                // Get the first value of the enum as default
+                Array enumValues = Enum.GetValues(type);
+                if (enumValues.Length > 0)
+                {
+                    return enumValues.GetValue(0);
+                }
+                return Enum.ToObject(type, 0); // Default to zero
+            }
                 
             if (type == typeof(string))
                 return string.Empty;
